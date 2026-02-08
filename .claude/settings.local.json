@@ -1,0 +1,83 @@
+{
+  "env": {
+    "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "70"
+  },
+  "permissions": {
+    "allow": [
+      "Bash(start \"\" \"D:\\\\Receipt and Warranty Vault\\\\mockup\\\\index.html\")",
+      "Bash(chmod:*)",
+      "Bash(git --version:*)",
+      "Bash(flutter --version:*)",
+      "Bash(node --version:*)",
+      "Bash(npm --version:*)",
+      "Bash(aws:*)",
+      "Bash(cdk:*)",
+      "Bash(java:*)",
+      "Bash(jq:*)",
+      "Bash(dart --version:*)",
+      "Bash(scoop:*)",
+      "Bash(uv:*)",
+      "Bash(code:*)",
+      "Bash(winget:*)",
+      "Bash(npm install:*)",
+      "Bash(powershell.exe -NoProfile -Command \"Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force; iwr -useb get.scoop.sh | iex\")",
+      "Bash(powershell.exe -NoProfile -Command:*)",
+      "Bash(where:*)",
+      "Bash(test:*)",
+      "Bash(tr:*)",
+      "Bash(export PATH=\"$PATH:C:/Program Files/Common Files/Oracle/Java/javapath:C:/Users/necro/AppData/Local/Microsoft/WinGet/Packages/jqlang.jq_Microsoft.Winget.Source_8wekyb3d8bbwe\")",
+      "Bash(\"C:/Program Files/Common Files/Oracle/Java/javapath/java.exe\" --version)",
+      "Bash(\"C:/Users/necro/AppData/Local/Microsoft/WinGet/Packages/jqlang.jq_Microsoft.Winget.Source_8wekyb3d8bbwe/jq.exe\" --version)",
+      "Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"D:/Receipt and Warranty Vault/temp_flutter_path.ps1\")",
+      "Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"D:/Receipt and Warranty Vault/install_flutter.ps1\")",
+      "Bash(export PATH=\"$PATH:C:/Users/necro/flutter/bin\")",
+      "Bash(\"C:/Users/necro/flutter/bin/flutter.bat\" --version)",
+      "Bash(\"C:/Users/necro/flutter/bin/flutter.bat\" --disable-analytics)",
+      "Bash(\"C:/Users/necro/flutter/bin/flutter.bat\" config --no-analytics)",
+      "Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"D:/Receipt and Warranty Vault/setup_android.ps1\")",
+      "Bash(export ANDROID_HOME:*)",
+      "Bash(\"C:/Users/necro/flutter/bin/flutter.bat\" doctor --android-licenses)",
+      "Bash(\"C:/Users/necro/flutter/bin/flutter.bat\" doctor:*)",
+      "Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"D:/Receipt and Warranty Vault/install_cmdline_tools.ps1\")",
+      "Bash(\"$LOCALAPPDATA/Android/Sdk/cmdline-tools/latest/bin/sdkmanager.bat\" --licenses)",
+      "Bash(\"C:/Users/necro/AppData/Local/Android/Sdk/cmdline-tools/latest/bin/sdkmanager.bat\" --licenses)",
+      "Bash(export JAVA_HOME=\"C:/Program Files/Java/jdk-21.0.10\")",
+      "Bash(export:*)",
+      "Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"D:/Receipt and Warranty Vault/set_java_home.ps1\")",
+      "Bash(flutter doctor:*)",
+      "Bash(git init:*)",
+      "Bash(git -C \"D:/Receipt and Warranty Vault\" remote -v)",
+      "Bash(git -C \"D:/Receipt and Warranty Vault\" remote add origin:*)",
+      "Bash(flutter create:*)",
+      "Bash(flutter pub:*)",
+      "Bash(flutter analyze:*)",
+      "Bash(git status:*)"
+    ]
+  },
+  "hooks": {
+    "PreCompact": [
+      {
+        "matcher": "auto|manual",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"D:/Receipt and Warranty Vault/.claude/hooks/pre-compact-save.sh\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"D:/Receipt and Warranty Vault/.claude/hooks/post-compact-context.sh\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}

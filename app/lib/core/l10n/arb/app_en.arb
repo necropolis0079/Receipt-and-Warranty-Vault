@@ -1,0 +1,7 @@
+{
+  "@@locale": "en",
+  "appTitle": "Warranty Vault",
+  "@appTitle": {
+    "description": "The app title shown in the app bar and about screen"
+  }
+}
