@@ -953,5 +953,89 @@
   "manageCategories": "Manage Categories",
   "@manageCategories": {
     "description": "Settings option to manage receipt categories"
+  },
+  "trash": "Trash",
+  "@trash": {
+    "description": "Title for the trash/deleted receipts screen"
+  },
+  "trashEmpty": "Trash is empty",
+  "@trashEmpty": {
+    "description": "Empty state text in the trash screen"
+  },
+  "restoreReceipt": "Restore",
+  "@restoreReceipt": {
+    "description": "Action to restore a deleted receipt"
+  },
+  "deletePermanently": "Delete Permanently",
+  "@deletePermanently": {
+    "description": "Action to permanently delete a receipt from trash"
+  },
+  "searchResults": "{count, plural, =1{1 result} other{{count} results}}",
+  "@searchResults": {
+    "description": "Pluralized search result count",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "5"
+      }
+    }
+  },
+  "filterByWarranty": "Warranty",
+  "@filterByWarranty": {
+    "description": "Filter chip label for warranty filter"
+  },
+  "hasWarranty": "Has Warranty",
+  "@hasWarranty": {
+    "description": "Filter option: receipts with warranty"
+  },
+  "noWarrantyFilter": "No Warranty",
+  "@noWarrantyFilter": {
+    "description": "Filter option: receipts without warranty"
+  },
+  "shareReceipt": "Share Receipt",
+  "@shareReceipt": {
+    "description": "Action to share a receipt"
+  },
+  "exportCsv": "Export as CSV",
+  "@exportCsv": {
+    "description": "Action to export receipts as CSV"
+  },
+  "batchExport": "Batch Export",
+  "@batchExport": {
+    "description": "Action to export multiple receipts"
+  },
+  "reminderSettings": "Reminder Settings",
+  "@reminderSettings": {
+    "description": "Title for reminder settings dialog"
+  },
+  "reminderDaysBefore": "Remind {days} days before",
+  "@reminderDaysBefore": {
+    "description": "Reminder timing option",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "example": "7"
+      }
+    }
+  },
+  "reminderEnabled": "Reminders enabled",
+  "@reminderEnabled": {
+    "description": "Status text when reminders are on"
+  },
+  "reminderDisabled": "Reminders disabled",
+  "@reminderDisabled": {
+    "description": "Status text when reminders are off"
+  },
+  "returnConfirm": "Mark this receipt as returned?",
+  "@returnConfirm": {
+    "description": "Confirmation message for marking receipt as returned"
+  },
+  "receiptReturned": "Receipt marked as returned",
+  "@receiptReturned": {
+    "description": "Snackbar message when a receipt is marked as returned"
+  },
+  "receiptShared": "Receipt shared",
+  "@receiptShared": {
+    "description": "Snackbar message when a receipt is shared"
   }
 }

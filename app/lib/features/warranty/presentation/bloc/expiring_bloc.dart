@@ -1,18 +1,23 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/notifications/reminder_scheduler.dart';
 import '../../../receipt/domain/repositories/receipt_repository.dart';
 import 'expiring_event.dart';
 import 'expiring_state.dart';
 
 class ExpiringBloc extends Bloc<ExpiringEvent, ExpiringState> {
-  ExpiringBloc({required ReceiptRepository receiptRepository})
-      : _receiptRepository = receiptRepository,
+  ExpiringBloc({
+    required ReceiptRepository receiptRepository,
+    ReminderScheduler? reminderScheduler,
+  })  : _receiptRepository = receiptRepository,
+        _reminderScheduler = reminderScheduler,
         super(const ExpiringInitial()) {
     on<ExpiringLoadRequested>(_onLoadRequested);
     on<ExpiringRefreshRequested>(_onRefreshRequested);
   }
 
   final ReceiptRepository _receiptRepository;
+  final ReminderScheduler? _reminderScheduler;
   String? _lastUserId;
   int _lastDaysAhead = 30;
 
@@ -30,6 +35,11 @@ class ExpiringBloc extends Bloc<ExpiringEvent, ExpiringState> {
       ]);
       final expiringSoon = results[0];
       final expired = results[1];
+      // Schedule reminders for all expiring-soon receipts.
+      if (_reminderScheduler != null && expiringSoon.isNotEmpty) {
+        await _reminderScheduler.scheduleForAll(expiringSoon);
+      }
+
       if (expiringSoon.isEmpty && expired.isEmpty) {
         emit(const ExpiringEmpty());
       } else {

@@ -177,6 +177,32 @@ class ReceiptsDao extends DatabaseAccessor<AppDatabase>
     return row.read(count) ?? 0;
   }
 
+  /// Restore a soft-deleted receipt to active status.
+  Future<void> restoreReceipt(String receiptId) {
+    final now = DateTime.now().toIso8601String();
+    return (update(receipts)
+          ..where((r) => r.receiptId.equals(receiptId)))
+        .write(ReceiptsCompanion(
+      status: const Value('active'),
+      deletedAt: const Value(null),
+      updatedAt: Value(now),
+      syncStatus: const Value('pending'),
+    ));
+  }
+
+  /// Hard-delete receipts that have been soft-deleted for more than [days] days.
+  /// Returns the number of deleted rows.
+  Future<int> purgeOldDeleted(int days) {
+    final cutoff =
+        DateTime.now().subtract(Duration(days: days)).toIso8601String();
+    return (delete(receipts)
+          ..where((r) =>
+              r.status.equals('deleted') &
+              r.deletedAt.isNotNull() &
+              r.deletedAt.isSmallerThanValue(cutoff)))
+        .go();
+  }
+
   /// ISO 8601 date-only helper (YYYY-MM-DD).
   static String _dateOnly(DateTime dt) => dt.toIso8601String().substring(0, 10);
 }

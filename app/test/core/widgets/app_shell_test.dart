@@ -10,6 +10,7 @@ import 'package:warrantyvault/features/auth/domain/repositories/auth_repository.
 import 'package:warrantyvault/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:warrantyvault/features/receipt/domain/repositories/receipt_repository.dart';
 import 'package:warrantyvault/features/receipt/presentation/bloc/vault_bloc.dart';
+import 'package:warrantyvault/features/search/presentation/bloc/search_bloc.dart';
 import 'package:warrantyvault/features/warranty/presentation/bloc/expiring_bloc.dart';
 
 class MockAuthRepository extends Mock implements AuthRepository {}
@@ -23,6 +24,7 @@ void main() {
   late AppLockCubit lockCubit;
   late VaultBloc vaultBloc;
   late ExpiringBloc expiringBloc;
+  late SearchBloc searchBloc;
 
   setUp(() {
     final mockRepo = MockAuthRepository();
@@ -38,11 +40,14 @@ void main() {
         .thenAnswer((_) async => []);
     when(() => mockReceiptRepo.getExpiredWarranties(any()))
         .thenAnswer((_) async => []);
+    when(() => mockReceiptRepo.search(any(), any()))
+        .thenAnswer((_) async => []);
 
     authBloc = AuthBloc(authRepository: mockRepo);
     lockCubit = AppLockCubit(appLockService: mockLockService);
     vaultBloc = VaultBloc(receiptRepository: mockReceiptRepo);
     expiringBloc = ExpiringBloc(receiptRepository: mockReceiptRepo);
+    searchBloc = SearchBloc(receiptRepository: mockReceiptRepo, userId: 'test');
   });
 
   tearDown(() {
@@ -50,6 +55,7 @@ void main() {
     lockCubit.close();
     vaultBloc.close();
     expiringBloc.close();
+    searchBloc.close();
   });
 
   Widget buildApp() {
@@ -63,6 +69,7 @@ void main() {
           BlocProvider.value(value: lockCubit),
           BlocProvider.value(value: vaultBloc),
           BlocProvider.value(value: expiringBloc),
+          BlocProvider.value(value: searchBloc),
         ],
         child: const AppShell(),
       ),

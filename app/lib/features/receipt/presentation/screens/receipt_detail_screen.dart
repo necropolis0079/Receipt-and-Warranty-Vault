@@ -2,10 +2,12 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../domain/entities/receipt.dart';
+import '../../domain/services/export_service.dart';
 import '../bloc/vault_event.dart';
 import '../bloc/vault_bloc.dart';
 import '../widgets/warranty_badge.dart';
@@ -103,10 +105,37 @@ class ReceiptDetailScreen extends StatelessWidget {
   }
 
   void _onMarkAsReturned(BuildContext context) {
-    // TODO: Dispatch a VaultReceiptStatusChanged event once available.
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Mark as Returned is not yet implemented.')),
-    );
+    showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Mark as Returned'),
+        content: Text(
+          'Mark "${receipt.displayName}" as returned?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Confirm'),
+          ),
+        ],
+      ),
+    ).then((confirmed) {
+      if (confirmed == true && context.mounted) {
+        context.read<VaultBloc>().add(
+              VaultReceiptStatusChanged(
+                receiptId: receipt.receiptId,
+                status: ReceiptStatus.returned.name,
+              ),
+            );
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Receipt marked as returned.')),
+        );
+      }
+    });
   }
 
   void _onEdit(BuildContext context) {
@@ -116,11 +145,17 @@ class ReceiptDetailScreen extends StatelessWidget {
     );
   }
 
-  void _onShare(BuildContext context) {
-    // TODO: Implement share/export.
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Share is not yet implemented.')),
-    );
+  Future<void> _onShare(BuildContext context) async {
+    try {
+      final exportService = GetIt.I<ExportService>();
+      await exportService.shareReceipt(receipt);
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to share: $e')),
+        );
+      }
+    }
   }
 
   // ---------------------------------------------------------------------------

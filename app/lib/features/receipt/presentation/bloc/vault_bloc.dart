@@ -12,6 +12,7 @@ class VaultBloc extends Bloc<VaultEvent, VaultState> {
     on<VaultLoadRequested>(_onLoadRequested);
     on<VaultReceiptDeleted>(_onReceiptDeleted);
     on<VaultReceiptFavoriteToggled>(_onFavoriteToggled);
+    on<VaultReceiptStatusChanged>(_onStatusChanged);
   }
 
   final ReceiptRepository _receiptRepository;
@@ -62,6 +63,28 @@ class VaultBloc extends Bloc<VaultEvent, VaultState> {
       if (receipt != null) {
         final updated = receipt.copyWith(
           isFavorite: event.isFavorite,
+          updatedAt: DateTime.now().toIso8601String(),
+        );
+        await _receiptRepository.updateReceipt(updated);
+      }
+    } catch (e) {
+      emit(VaultError(e.toString()));
+    }
+  }
+
+  Future<void> _onStatusChanged(
+    VaultReceiptStatusChanged event,
+    Emitter<VaultState> emit,
+  ) async {
+    try {
+      final receipt = await _receiptRepository.getById(event.receiptId);
+      if (receipt != null) {
+        final status = ReceiptStatus.values.firstWhere(
+          (s) => s.name == event.status,
+          orElse: () => receipt.status,
+        );
+        final updated = receipt.copyWith(
+          status: status,
           updatedAt: DateTime.now().toIso8601String(),
         );
         await _receiptRepository.updateReceipt(updated);

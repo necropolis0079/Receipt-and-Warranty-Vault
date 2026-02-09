@@ -211,3 +211,81 @@
 - Coverage: domain entities, BLoCs/Cubits, repository, mapper, widgets, screens
 
 ---
+
+## Sprint 5-6: Search, Notifications, Export & Polish (2026-02-09)
+
+### What Was Built
+
+**Notification Service Layer:**
+- NotificationService abstract interface (initialize, scheduleWarrantyReminder, cancel, getScheduled)
+- LocalNotificationService — real implementation wrapping flutter_local_notifications with timezone-aware scheduling
+- MockNotificationService — in-memory mock for tests (stores scheduled reminders, no platform calls)
+- ReminderScheduler — stateless utility that schedules reminders at 7, 1, and 0 days before warranty expiry. Idempotent (cancels old, reschedules).
+
+**Search BLoC + UI:**
+- SearchBloc — takes ReceiptRepository + userId. Debounced 300ms query via Timer + Completer. Filters applied client-side after search results.
+- SearchEvent sealed class: SearchQueryChanged, SearchFilterChanged, SearchCleared
+- SearchState sealed class: SearchInitial, SearchLoading, SearchLoaded, SearchEmpty, SearchError
+- SearchFilters model — Equatable with category, dateFrom, dateTo, amountMin, amountMax, hasWarranty. `applyTo(List<Receipt>)` for client-side filtering.
+- SearchScreen rewritten — debounced TextField → SearchBloc → results list, filter chips, empty/error states
+- SearchFilterBar widget — horizontal scrollable chip bar (category dropdown, date range picker, warranty toggle, clear filters)
+- SearchResultList widget — ListView.builder of ReceiptCard with onTap navigation
+
+**Export/Share Service:**
+- ExportService abstract interface: shareReceipt, exportReceiptAsText, batchExportCsv, shareFile
+- DeviceExportService — real implementation using share_plus (Share.share for text, Share.shareXFiles for files, CSV via csv package)
+- MockExportService — mock for tests
+
+**Trash/Recovery:**
+- TrashCubit — Cubit wrapping ReceiptRepository: loadDeleted, restoreReceipt, permanentlyDelete
+- TrashState — Equatable (receipts, isLoading, error)
+- TrashScreen — lists soft-deleted receipts, Restore/Delete Permanently buttons, empty state
+- Added restoreReceipt and purgeOldDeleted to ReceiptRepository interface + LocalReceiptRepository
+
+**Notification Wiring into Existing Flows:**
+- AddReceiptBloc modified — accepts optional ReminderScheduler, calls scheduleForReceipt after save/fastSave when warrantyMonths > 0
+- ExpiringBloc modified — accepts optional ReminderScheduler, calls scheduleForAll after loading expiring warranties
+- VaultBloc modified — added VaultReceiptStatusChanged event for status updates from detail screen
+
+**Integration Wiring:**
+- DI container (injection.dart) updated — registered MockNotificationService, MockExportService, ReminderScheduler, SearchBloc (factory), TrashCubit (factory)
+- Settings screen wired — Trash tile → TrashScreen, Category Management tile → CategoryManagementScreen
+- ~20 new localization keys added to both app_en.arb and app_el.arb (search, export, trash, notifications)
+
+**New dependencies (pubspec.yaml):**
+- flutter_local_notifications: ^18.0.1
+- timezone: ^0.10.0
+- share_plus: ^10.1.4
+- csv: ^6.0.0
+
+### Key Decisions
+- **SearchBloc with debounce** — 300ms debounce using Timer+Completer. Prevents spamming FTS5 on every keystroke. Filters applied client-side after search.
+- **Notification service abstraction** — Mock for tests/dev, real LocalNotificationService for devices. Same mock-first pattern as ImagePipelineService/OcrService.
+- **ReminderScheduler is a pure utility** — No state, no platform dependency. Given receipts, computes reminder dates. Testable without mocks.
+- **TrashCubit (not BLoC)** — Simple CRUD, no complex event flows. Matches CategoryManagementCubit pattern.
+- **Export via share_plus** — Cross-platform sharing. Text format for quick shares, CSV for batch exports.
+- **Search filters client-side** — FTS5 handles text query, then SearchFilters.applyTo() filters by category/date/amount.
+- **SearchBloc at app level** — Provided in app.dart MultiBlocProvider since SearchScreen is a tab in AppShell.
+
+### Issues Resolved
+1. **share_plus API mismatch**: Agent-generated code used `SharePlus.instance.share(ShareParams(...))` which doesn't exist in share_plus v10.1.4. Fixed to `Share.share()` and `Share.shareXFiles()`.
+2. **Wrong package name in test imports**: Two test files imported `package:warranty_vault/` instead of `package:warrantyvault/`. Fixed all imports.
+3. **Windows `nul` artifact**: An agent accidentally created a `../nul` file (Windows null device artifact). Cleaned up.
+4. **Missing SearchBloc in existing tests**: SearchScreen rewrite added `BlocBuilder<SearchBloc, SearchState>`, which required SearchBloc in widget tree. Updated 3 existing test files (widget_test.dart, app_shell_test.dart, auth_gate_test.dart) to provide SearchBloc with mock ReceiptRepository.
+
+### Test Summary
+- 64 new tests added (334 total = 270 existing + 64 new)
+- All 334 tests passing, 0 failures
+- 0 analyzer issues (flutter analyze clean)
+- New test files:
+  - notification_service_test.dart (MockNotificationService)
+  - reminder_scheduler_test.dart (ReminderScheduler)
+  - search_bloc_test.dart (SearchBloc debounce, filters, states)
+  - search_filters_test.dart (SearchFilters.applyTo)
+  - search_screen_test.dart (SearchScreen widget)
+  - export_service_test.dart (MockExportService, DeviceExportService text/CSV formatting)
+  - trash_cubit_test.dart (TrashCubit CRUD)
+  - add_receipt_reminder_test.dart (AddReceiptBloc reminder scheduling)
+  - expiring_bloc_reminder_test.dart (ExpiringBloc reminder scheduling)
+
+---

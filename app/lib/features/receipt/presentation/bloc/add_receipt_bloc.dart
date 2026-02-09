@@ -6,6 +6,7 @@ import '../../domain/entities/receipt.dart';
 import '../../domain/repositories/receipt_repository.dart';
 import '../../domain/services/image_pipeline_service.dart';
 import '../../domain/services/ocr_service.dart';
+import '../../../../core/notifications/reminder_scheduler.dart';
 import 'add_receipt_event.dart';
 import 'add_receipt_state.dart';
 
@@ -14,10 +15,12 @@ class AddReceiptBloc extends Bloc<AddReceiptEvent, AddReceiptState> {
     required ImagePipelineService imagePipelineService,
     required OcrService ocrService,
     required ReceiptRepository receiptRepository,
+    ReminderScheduler? reminderScheduler,
     Uuid? uuid,
   })  : _imagePipeline = imagePipelineService,
         _ocrService = ocrService,
         _receiptRepository = receiptRepository,
+        _reminderScheduler = reminderScheduler,
         _uuid = uuid ?? const Uuid(),
         super(const AddReceiptInitial()) {
     on<CaptureFromCamera>(_onCaptureFromCamera);
@@ -38,6 +41,7 @@ class AddReceiptBloc extends Bloc<AddReceiptEvent, AddReceiptState> {
   final ImagePipelineService _imagePipeline;
   final OcrService _ocrService;
   final ReceiptRepository _receiptRepository;
+  final ReminderScheduler? _reminderScheduler;
   final Uuid _uuid;
 
   Future<void> _onCaptureFromCamera(
@@ -236,6 +240,7 @@ class AddReceiptBloc extends Bloc<AddReceiptEvent, AddReceiptState> {
         fieldsState: currentState,
       );
       await _receiptRepository.saveReceipt(receipt);
+      await _scheduleRemindersIfNeeded(receipt);
       emit(AddReceiptSaved(receipt.receiptId));
     } catch (e) {
       emit(AddReceiptError(e.toString(), previousState: currentState));
@@ -261,6 +266,7 @@ class AddReceiptBloc extends Bloc<AddReceiptEvent, AddReceiptState> {
         fieldsState: fieldsState,
       );
       await _receiptRepository.saveReceipt(receipt);
+      await _scheduleRemindersIfNeeded(receipt);
       emit(AddReceiptSaved(receipt.receiptId));
     } catch (e) {
       emit(AddReceiptError(e.toString(), previousState: fieldsState));
@@ -277,6 +283,13 @@ class AddReceiptBloc extends Bloc<AddReceiptEvent, AddReceiptState> {
   // ---------------------------------------------------------------------------
   // Helpers
   // ---------------------------------------------------------------------------
+
+  /// Schedule warranty reminders if the receipt has a warranty.
+  Future<void> _scheduleRemindersIfNeeded(Receipt receipt) async {
+    if (_reminderScheduler != null && receipt.warrantyMonths > 0) {
+      await _reminderScheduler.scheduleForReceipt(receipt);
+    }
+  }
 
   /// Extract the current image list from whatever state we are in.
   List<ImageData>? get _currentImages {

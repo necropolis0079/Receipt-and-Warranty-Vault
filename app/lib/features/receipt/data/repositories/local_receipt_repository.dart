@@ -98,4 +98,18 @@ class LocalReceiptRepository implements ReceiptRepository {
   Future<int> countActive(String userId) {
     return _receiptsDao.countActive(userId);
   }
+
+  @override
+  Future<void> restoreReceipt(String receiptId) async {
+    await _receiptsDao.restoreReceipt(receiptId);
+    await _syncQueueDao.enqueue(
+      receiptId: receiptId,
+      operation: 'update',
+    );
+  }
+
+  @override
+  Future<int> purgeOldDeleted(int days) {
+    return _receiptsDao.purgeOldDeleted(days);
+  }
 }

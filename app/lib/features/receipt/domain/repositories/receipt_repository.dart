@@ -34,4 +34,10 @@ abstract class ReceiptRepository {
 
   /// Count active receipts for a user.
   Future<int> countActive(String userId);
+
+  /// Restore a soft-deleted receipt to active status.
+  Future<void> restoreReceipt(String receiptId);
+
+  /// Hard-delete receipts that have been in trash for more than [days] days.
+  Future<int> purgeOldDeleted(int days);
 }

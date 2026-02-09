@@ -34,3 +34,15 @@ class VaultReceiptFavoriteToggled extends VaultEvent {
   @override
   List<Object?> get props => [receiptId, isFavorite];
 }
+
+class VaultReceiptStatusChanged extends VaultEvent {
+  const VaultReceiptStatusChanged({
+    required this.receiptId,
+    required this.status,
+  });
+  final String receiptId;
+  final String status;
+
+  @override
+  List<Object?> get props => [receiptId, status];
+}
