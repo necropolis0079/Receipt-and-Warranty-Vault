@@ -7,10 +7,16 @@ abstract final class AppColors {
   static const Color accentAmber = Color(0xFFD4920B);
   static const Color error = Color(0xFFC0392B);
 
+  // Status colors
+  static const Color success = Color(0xFF27AE60);
+
   // Neutrals
   static const Color white = Color(0xFFFFFFFF);
   static const Color textPrimary = Color(0xFF1A1A1A);
   static const Color textSecondary = Color(0xFF6B7280);
+  static const Color textDark = Color(0xFF374151);
+  static const Color textMedium = Color(0xFF6B7280);
+  static const Color textLight = Color(0xFF9CA3AF);
   static const Color divider = Color(0xFFE5E7EB);
 
   // Derived / surface

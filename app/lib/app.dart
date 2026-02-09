@@ -9,6 +9,8 @@ import 'core/router/auth_gate.dart';
 import 'core/security/app_lock_cubit.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
+import 'features/receipt/presentation/bloc/vault_bloc.dart';
+import 'features/warranty/presentation/bloc/expiring_bloc.dart';
 
 /// The root widget for the Warranty Vault application.
 ///
@@ -27,6 +29,8 @@ class WarrantyVaultApp extends StatelessWidget {
         BlocProvider(
           create: (_) => getIt<AppLockCubit>()..checkDeviceSupport(),
         ),
+        BlocProvider(create: (_) => getIt<VaultBloc>()),
+        BlocProvider(create: (_) => getIt<ExpiringBloc>()),
       ],
       child: BlocBuilder<LocaleCubit, LocaleState>(
         builder: (context, state) {

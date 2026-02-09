@@ -2,10 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+import 'package:get_it/get_it.dart';
+
+import '../../../../core/database/app_database.dart';
 import '../../../../core/security/app_lock_cubit.dart';
 import '../../../../core/security/app_lock_state.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_event.dart';
+import '../../../receipt/presentation/screens/category_management_screen.dart';
 
 /// Settings screen with live App Lock toggle and Sign Out action.
 class SettingsScreen extends StatelessWidget {
@@ -81,6 +85,19 @@ class SettingsScreen extends StatelessWidget {
             },
           ),
 
+          _SettingsTile(
+            icon: Icons.category,
+            title: l10n.manageCategories,
+            onTap: () {
+              Navigator.of(context).push<void>(
+                MaterialPageRoute(
+                  builder: (_) => CategoryManagementScreen(
+                    categoriesDao: GetIt.I<AppDatabase>().categoriesDao,
+                  ),
+                ),
+              );
+            },
+          ),
           _SettingsTile(
             icon: Icons.info_outline,
             title: l10n.about,

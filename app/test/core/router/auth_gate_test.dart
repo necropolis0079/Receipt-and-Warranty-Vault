@@ -11,16 +11,24 @@ import 'package:warrantyvault/features/auth/domain/entities/auth_user.dart';
 import 'package:warrantyvault/features/auth/domain/repositories/auth_repository.dart';
 import 'package:warrantyvault/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:warrantyvault/features/auth/presentation/bloc/auth_state.dart';
+import 'package:warrantyvault/features/receipt/domain/repositories/receipt_repository.dart';
+import 'package:warrantyvault/features/receipt/presentation/bloc/vault_bloc.dart';
+import 'package:warrantyvault/features/warranty/presentation/bloc/expiring_bloc.dart';
 
 class MockAuthRepository extends Mock implements AuthRepository {}
 
 class MockAppLockService extends Mock implements AppLockService {}
 
+class MockReceiptRepository extends Mock implements ReceiptRepository {}
+
 void main() {
   late MockAuthRepository mockRepo;
   late MockAppLockService mockLockService;
+  late MockReceiptRepository mockReceiptRepo;
   late AuthBloc authBloc;
   late AppLockCubit lockCubit;
+  late VaultBloc vaultBloc;
+  late ExpiringBloc expiringBloc;
 
   const testUser = AuthUser(
     userId: 'test-id',
@@ -45,19 +53,32 @@ void main() {
   setUp(() {
     mockRepo = MockAuthRepository();
     mockLockService = MockAppLockService();
+    mockReceiptRepo = MockReceiptRepository();
+
     when(() => mockLockService.isDeviceSupported())
         .thenAnswer((_) async => false);
 
     // Default: no signed-in user
     when(() => mockRepo.getCurrentUser()).thenAnswer((_) async => null);
 
+    when(() => mockReceiptRepo.watchUserReceipts(any()))
+        .thenAnswer((_) => Stream.value([]));
+    when(() => mockReceiptRepo.getExpiringWarranties(any(), any()))
+        .thenAnswer((_) async => []);
+    when(() => mockReceiptRepo.getExpiredWarranties(any()))
+        .thenAnswer((_) async => []);
+
     authBloc = AuthBloc(authRepository: mockRepo);
     lockCubit = AppLockCubit(appLockService: mockLockService);
+    vaultBloc = VaultBloc(receiptRepository: mockReceiptRepo);
+    expiringBloc = ExpiringBloc(receiptRepository: mockReceiptRepo);
   });
 
   tearDown(() {
     authBloc.close();
     lockCubit.close();
+    vaultBloc.close();
+    expiringBloc.close();
   });
 
   Widget buildApp() {
@@ -69,6 +90,8 @@ void main() {
         providers: [
           BlocProvider.value(value: authBloc),
           BlocProvider.value(value: lockCubit),
+          BlocProvider.value(value: vaultBloc),
+          BlocProvider.value(value: expiringBloc),
         ],
         child: const AuthGate(),
       ),

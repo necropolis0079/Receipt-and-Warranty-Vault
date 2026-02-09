@@ -51,7 +51,12 @@
       "Bash(flutter create:*)",
       "Bash(flutter pub:*)",
       "Bash(flutter analyze:*)",
-      "Bash(git status:*)"
+      "Bash(git status:*)",
+      "Bash(git branch:*)",
+      "Bash(flutter gen-l10n:*)",
+      "Bash(dart run build_runner build:*)",
+      "Bash(flutter test:*)",
+      "Bash(Select-String \"\\\\[E\\\\]\")"
     ]
   },
   "hooks": {

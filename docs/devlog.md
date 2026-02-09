@@ -158,3 +158,56 @@
   - auth_gate_test: 2 (loading + unauthenticated from first pass, actually 8 total)
 
 ---
+
+## Sprint 3-4: Core Capture Flow (2026-02-09)
+
+### What Was Built
+**Domain Layer:**
+- Receipt, OcrResult, ImageData, ReceiptResult entities
+
+**Service Layer:**
+- ImagePipelineService interface + mock implementation
+- OcrService interface + mock implementation + hybrid (ML Kit + Tesseract)
+
+**Data Layer:**
+- ReceiptRepository interface + LocalReceiptRepository implementation
+- ReceiptMapper (domain <-> Drift entity conversion)
+
+**State Management:**
+- AddReceiptBloc -- full capture flow (image selection -> OCR -> field editing -> save)
+- VaultBloc -- receipt list with stream subscription
+- ExpiringBloc -- warranty tracking with expiry countdown
+- CategoryManagementCubit -- custom category CRUD
+
+**UI Widgets:**
+- ReceiptCard, WarrantyBadge, CaptureOptionSheet
+- OcrProgressIndicator, ReceiptFieldEditors, ImagePreviewStrip
+
+**Screens:**
+- AddReceiptScreen (full capture flow with modal presentation)
+- VaultScreen (BLoC-driven receipt list)
+- ExpiringScreen (warranty tracking and expiry display)
+- ReceiptDetailScreen (full receipt view)
+- ImagePreviewScreen (full-size image viewer)
+- CategoryManagementScreen (accessible from Settings)
+
+**Integration Wiring:**
+- DI container updated (injection.dart) with all new services/repos/BLoCs
+- AppShell updated -- Add tab triggers modal capture flow
+- app.dart provides VaultBloc + ExpiringBloc at app level
+- Settings screen links to Manage Categories
+- 10 new localization keys (EN + EL)
+
+### Key Decisions
+- **Mock-first strategy**: ImagePipelineService and OcrService use mock implementations; real implementations wrap native plugins and run only on devices
+- **BLoC for AddReceipt**: Complex multi-step capture flow needs event-driven state management
+- **Cubit for CategoryManagement**: Simple CRUD operations, Cubit is sufficient
+- **App-level VaultBloc/ExpiringBloc**: Provided at app level since ReceiptDetailScreen (a pushed route) also needs VaultBloc for delete/favorite
+
+### Test Summary
+- ~130 new tests added (270 total)
+- All 270 tests passing
+- 0 analyzer issues (flutter analyze clean)
+- Coverage: domain entities, BLoCs/Cubits, repository, mapper, widgets, screens
+
+---

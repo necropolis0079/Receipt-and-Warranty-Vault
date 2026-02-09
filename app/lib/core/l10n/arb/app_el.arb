@@ -225,5 +225,16 @@
   "appLockImmediate": "Αμέσως",
   "appLockAfter1Min": "Μετά από 1 λεπτό",
   "appLockAfter5Min": "Μετά από 5 λεπτά",
-  "appLockBiometricUnavailable": "Ο βιομετρικός έλεγχος δεν είναι διαθέσιμος σε αυτή τη συσκευή."
+  "appLockBiometricUnavailable": "Ο βιομετρικός έλεγχος δεν είναι διαθέσιμος σε αυτή τη συσκευή.",
+
+  "captureReceipt": "Καταγραφή Απόδειξης",
+  "captureReceiptDescription": "Τραβήξτε φωτογραφία ή εισάγετε εικόνα για καταγραφή απόδειξης.",
+  "camera": "Κάμερα",
+  "gallery": "Συλλογή",
+  "files": "Αρχεία",
+  "fastSave": "Γρήγορη Αποθήκευση",
+  "receiptSaved": "Η απόδειξη αποθηκεύτηκε",
+  "continueToOcr": "Συνέχεια σε OCR",
+  "savingReceipt": "Αποθήκευση απόδειξης...",
+  "manageCategories": "Διαχείριση Κατηγοριών"
 }

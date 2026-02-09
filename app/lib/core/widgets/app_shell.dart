@@ -2,13 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:warrantyvault/features/receipt/presentation/screens/vault_screen.dart';
 import 'package:warrantyvault/features/warranty/presentation/screens/expiring_screen.dart';
 import 'package:warrantyvault/features/receipt/presentation/screens/add_receipt_screen.dart';
+import 'package:warrantyvault/features/receipt/presentation/widgets/capture_option_sheet.dart';
 import 'package:warrantyvault/features/search/presentation/screens/search_screen.dart';
 import 'package:warrantyvault/features/settings/presentation/screens/settings_screen.dart';
 
 /// The main application shell providing 5-tab bottom navigation.
 ///
 /// Uses an [IndexedStack] to preserve the state of each tab when switching
-/// between them. The center "+Add" tab is styled to be visually prominent.
+/// between them. The center "+Add" tab opens a modal bottom sheet instead of
+/// navigating to a tab screen.
 class AppShell extends StatefulWidget {
   const AppShell({super.key});
 
@@ -25,15 +27,30 @@ class _AppShellState extends State<AppShell> {
   final List<Widget> _screens = const [
     VaultScreen(),
     ExpiringScreen(),
-    AddReceiptScreen(),
+    SizedBox.shrink(), // Placeholder — Add tab opens modal
     SearchScreen(),
     SettingsScreen(),
   ];
 
   void _onTabTapped(int index) {
+    if (index == 2) {
+      _openAddReceipt();
+      return;
+    }
     setState(() {
       _currentIndex = index;
     });
+  }
+
+  Future<void> _openAddReceipt() async {
+    final option = await CaptureOptionSheet.show(context);
+    if (option != null && mounted) {
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => AddReceiptScreen(initialOption: option),
+        ),
+      );
+    }
   }
 
   @override

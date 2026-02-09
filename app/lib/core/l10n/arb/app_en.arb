@@ -912,5 +912,46 @@
   "appLockBiometricUnavailable": "Biometric authentication is not available on this device.",
   "@appLockBiometricUnavailable": {
     "description": "Message when biometrics are not available"
+  },
+
+  "captureReceipt": "Capture Receipt",
+  "@captureReceipt": {
+    "description": "Title for the capture receipt screen"
+  },
+  "captureReceiptDescription": "Take a photo or import an image to capture your receipt.",
+  "@captureReceiptDescription": {
+    "description": "Subtitle describing the capture options"
+  },
+  "camera": "Camera",
+  "@camera": {
+    "description": "Label for the camera capture option"
+  },
+  "gallery": "Gallery",
+  "@gallery": {
+    "description": "Label for the gallery import option"
+  },
+  "files": "Files",
+  "@files": {
+    "description": "Label for the file import option"
+  },
+  "fastSave": "Fast Save",
+  "@fastSave": {
+    "description": "Button to save a receipt quickly without reviewing fields"
+  },
+  "receiptSaved": "Receipt saved",
+  "@receiptSaved": {
+    "description": "Snackbar message when a receipt is successfully saved"
+  },
+  "continueToOcr": "Continue to OCR",
+  "@continueToOcr": {
+    "description": "Button to proceed to OCR text extraction"
+  },
+  "savingReceipt": "Saving receipt...",
+  "@savingReceipt": {
+    "description": "Status message while saving a receipt"
+  },
+  "manageCategories": "Manage Categories",
+  "@manageCategories": {
+    "description": "Settings option to manage receipt categories"
   }
 }

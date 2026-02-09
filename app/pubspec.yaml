@@ -48,6 +48,20 @@ dependencies:
   # Auth (biometric/PIN lock)
   local_auth: ^2.3.0
 
+  # Image Capture & Processing
+  image_picker: ^1.1.2
+  image_cropper: ^8.0.0
+  flutter_image_compress: ^2.3.0
+  file_picker: ^8.1.6
+  image: ^4.5.2
+
+  # OCR
+  google_mlkit_text_recognition: ^0.14.0
+  flutter_tesseract_ocr: ^0.4.28
+
+  # Permissions
+  permission_handler: ^11.3.1
+
   # Connectivity
   connectivity_plus: ^6.1.4
   internet_connection_checker_plus: ^2.7.1
