@@ -139,10 +139,16 @@ D:\Receipt and Warranty Vault\
 └── .claude/ (SESSION_STATE, agents, hooks, settings)
 ```
 
+## AWS Setup Done
+- **Budget alert**: `WarrantyVault-Monthly-30USD` — $30/mo, alerts at 50%/80%/100% to giannis.nikolarakis@gmail.com — ACTIVE
+- **Tagging strategy**: All resources must have `Project=WarrantyVault`, `Environment=dev/staging/prod`, `Owner=necropolis0079`, `ManagedBy=CDK`
+- Both documented in CLAUDE.md
+
 ## What Comes Next
-- Commit all Sprint 1-2 work
-- Then: Cognito auth (needs Amplify Gen 2 setup in AWS)
+- Sprint 1-2 is COMPLETE and pushed (commit b522638)
+- Next phase: Cognito auth (Amplify Flutter Gen 2 setup in AWS)
 - Then: App lock (local_auth)
+- Then: Receipt capture + OCR pipeline
 - See `docs/14-roadmap.md` for full sprint plan
 
 ## Key Reminders

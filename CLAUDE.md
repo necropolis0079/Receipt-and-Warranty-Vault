@@ -85,6 +85,21 @@ A mobile app that helps people capture, organize, and retrieve receipts and warr
 | User deletion | Lambda cascade: Cognito → DynamoDB → S3 (hard wipe) |
 | Bucket security | Block all public access, enforce TLS, enforce KMS, restrict IAM, logging enabled |
 
+### AWS Tagging Strategy (MANDATORY for all resources)
+| Tag Key | Value | Purpose |
+|---------|-------|---------|
+| `Project` | `WarrantyVault` | Cost allocation & filtering |
+| `Environment` | `dev` / `staging` / `prod` | Distinguish environments |
+| `Owner` | `necropolis0079` | Ownership tracking |
+| `ManagedBy` | `CDK` | How it was created |
+
+### AWS Budget Alert
+- **Budget name**: `WarrantyVault-Monthly-30USD`
+- **Monthly limit**: $30 USD
+- **Alert thresholds**: 50% ($15), 80% ($24), 100% ($30)
+- **Notifications**: giannis.nikolarakis@gmail.com
+- **Status**: ACTIVE (created 2026-02-09)
+
 ---
 
 ## RESEARCH COMPLETED (2026-02-08)
