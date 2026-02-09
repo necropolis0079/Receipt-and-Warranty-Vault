@@ -1,7 +1,799 @@
 {
   "@@locale": "en",
+
   "appTitle": "Warranty Vault",
   "@appTitle": {
     "description": "The app title shown in the app bar and about screen"
+  },
+
+  "navigationVault": "Vault",
+  "@navigationVault": {
+    "description": "Bottom navigation tab label for the home/vault screen"
+  },
+  "navigationExpiring": "Expiring",
+  "@navigationExpiring": {
+    "description": "Bottom navigation tab label for expiring warranties"
+  },
+  "navigationAdd": "Add",
+  "@navigationAdd": {
+    "description": "Bottom navigation tab label for adding a receipt"
+  },
+  "navigationSearch": "Search",
+  "@navigationSearch": {
+    "description": "Bottom navigation tab label for search"
+  },
+  "navigationSettings": "Settings",
+  "@navigationSettings": {
+    "description": "Bottom navigation tab label for settings"
+  },
+
+  "myReceipts": "My Receipts",
+  "@myReceipts": {
+    "description": "Title on the vault/home screen"
+  },
+  "noReceiptsYet": "No receipts yet",
+  "@noReceiptsYet": {
+    "description": "Empty state title when user has no receipts"
+  },
+  "addYourFirstReceipt": "Add your first receipt to start organizing your purchases and warranties.",
+  "@addYourFirstReceipt": {
+    "description": "Empty state subtitle encouraging the user to add a receipt"
+  },
+  "receiptsCount": "{count, plural, =0{No receipts} =1{1 receipt} other{{count} receipts}}",
+  "@receiptsCount": {
+    "description": "Pluralized count of receipts",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "5"
+      }
+    }
+  },
+  "activeWarranties": "Active Warranties",
+  "@activeWarranties": {
+    "description": "Label for the active warranties stat on the home screen"
+  },
+  "totalSpent": "Total Spent",
+  "@totalSpent": {
+    "description": "Label for the total spending stat on the home screen"
+  },
+
+  "expiringWarranties": "Expiring Warranties",
+  "@expiringWarranties": {
+    "description": "Title for the expiring warranties screen"
+  },
+  "noExpiringWarranties": "No expiring warranties",
+  "@noExpiringWarranties": {
+    "description": "Empty state when no warranties are expiring soon"
+  },
+  "expiresIn": "Expires in {days} days",
+  "@expiresIn": {
+    "description": "Shows how many days until warranty expires",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "example": "30"
+      }
+    }
+  },
+  "expired": "Expired",
+  "@expired": {
+    "description": "Label when a warranty has already expired"
+  },
+  "expiresInDays": "{count, plural, =0{Expires today} =1{Expires in 1 day} other{Expires in {count} days}}",
+  "@expiresInDays": {
+    "description": "Pluralized days until warranty expiry",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "14"
+      }
+    }
+  },
+  "expiresInMonths": "{count, plural, =1{Expires in 1 month} other{Expires in {count} months}}",
+  "@expiresInMonths": {
+    "description": "Pluralized months until warranty expiry",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "expiresInYears": "{count, plural, =1{Expires in 1 year} other{Expires in {count} years}}",
+  "@expiresInYears": {
+    "description": "Pluralized years until warranty expiry",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "expiresInDaysCount": "Expires in {count} days",
+  "@expiresInDaysCount": {
+    "description": "Non-pluralized days until warranty expiry with count param",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "7"
+      }
+    }
+  },
+  "expiringToday": "Expiring today",
+  "@expiringToday": {
+    "description": "Label when warranty expires today"
+  },
+  "expiredDaysAgo": "{count, plural, =1{Expired 1 day ago} other{Expired {count} days ago}}",
+  "@expiredDaysAgo": {
+    "description": "How many days ago a warranty expired",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "5"
+      }
+    }
+  },
+
+  "addReceipt": "Add Receipt",
+  "@addReceipt": {
+    "description": "Title for the add receipt screen"
+  },
+  "takePhoto": "Take Photo",
+  "@takePhoto": {
+    "description": "Button to capture a receipt using the camera"
+  },
+  "importFromGallery": "Import from Gallery",
+  "@importFromGallery": {
+    "description": "Button to import a receipt image from the photo gallery"
+  },
+  "importFromFiles": "Import from Files",
+  "@importFromFiles": {
+    "description": "Button to import a receipt from files (PDF/image)"
+  },
+  "scanningReceipt": "Scanning receipt...",
+  "@scanningReceipt": {
+    "description": "Status message while OCR is processing"
+  },
+  "extractingData": "Extracting data...",
+  "@extractingData": {
+    "description": "Status message while LLM is extracting receipt fields"
+  },
+  "reviewDetails": "Review Details",
+  "@reviewDetails": {
+    "description": "Title for the screen where user reviews extracted receipt data"
+  },
+
+  "storeName": "Store Name",
+  "@storeName": {
+    "description": "Label for the store/merchant name field"
+  },
+  "purchaseDate": "Purchase Date",
+  "@purchaseDate": {
+    "description": "Label for the purchase date field"
+  },
+  "totalAmount": "Total Amount",
+  "@totalAmount": {
+    "description": "Label for the total amount field"
+  },
+  "currency": "Currency",
+  "@currency": {
+    "description": "Label for the currency field"
+  },
+  "category": "Category",
+  "@category": {
+    "description": "Label for the category field"
+  },
+  "warrantyMonths": "Warranty (Months)",
+  "@warrantyMonths": {
+    "description": "Label for the warranty duration in months field"
+  },
+  "warrantyExpiry": "Warranty Expiry",
+  "@warrantyExpiry": {
+    "description": "Label for the warranty expiry date field"
+  },
+  "notes": "Notes",
+  "@notes": {
+    "description": "Label for the notes field"
+  },
+  "tags": "Tags",
+  "@tags": {
+    "description": "Label for the tags field"
+  },
+  "status": "Status",
+  "@status": {
+    "description": "Label for the receipt status field"
+  },
+
+  "statusActive": "Active",
+  "@statusActive": {
+    "description": "Receipt status: active"
+  },
+  "statusReturned": "Returned",
+  "@statusReturned": {
+    "description": "Receipt status: returned"
+  },
+  "statusDeleted": "Deleted",
+  "@statusDeleted": {
+    "description": "Receipt status: deleted"
+  },
+
+  "save": "Save",
+  "@save": {
+    "description": "Save action button"
+  },
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Cancel action button"
+  },
+  "delete": "Delete",
+  "@delete": {
+    "description": "Delete action button"
+  },
+  "edit": "Edit",
+  "@edit": {
+    "description": "Edit action button"
+  },
+  "share": "Share",
+  "@share": {
+    "description": "Share action button"
+  },
+  "export": "Export",
+  "@export": {
+    "description": "Export action button"
+  },
+  "markAsReturned": "Mark as Returned",
+  "@markAsReturned": {
+    "description": "Action to mark a receipt as returned"
+  },
+  "undoReturn": "Undo Return",
+  "@undoReturn": {
+    "description": "Action to undo marking a receipt as returned"
+  },
+  "addToFavorites": "Add to Favorites",
+  "@addToFavorites": {
+    "description": "Action to mark a receipt as favorite"
+  },
+  "removeFromFavorites": "Remove from Favorites",
+  "@removeFromFavorites": {
+    "description": "Action to unmark a receipt as favorite"
+  },
+
+  "searchReceipts": "Search Receipts",
+  "@searchReceipts": {
+    "description": "Title for the search screen"
+  },
+  "searchHint": "Search by store, item, or note...",
+  "@searchHint": {
+    "description": "Hint text in the search input field"
+  },
+  "noResultsFound": "No results found",
+  "@noResultsFound": {
+    "description": "Shown when search returns no results"
+  },
+  "filterByCategory": "Filter by Category",
+  "@filterByCategory": {
+    "description": "Filter option for category"
+  },
+  "filterByStore": "Filter by Store",
+  "@filterByStore": {
+    "description": "Filter option for store"
+  },
+  "filterByDate": "Filter by Date",
+  "@filterByDate": {
+    "description": "Filter option for date"
+  },
+  "filterByStatus": "Filter by Status",
+  "@filterByStatus": {
+    "description": "Filter option for status"
+  },
+  "clearFilters": "Clear Filters",
+  "@clearFilters": {
+    "description": "Action to clear all active filters"
+  },
+  "sortBy": "Sort By",
+  "@sortBy": {
+    "description": "Label for the sort options"
+  },
+  "sortByDate": "Date",
+  "@sortByDate": {
+    "description": "Sort option: by date"
+  },
+  "sortByAmount": "Amount",
+  "@sortByAmount": {
+    "description": "Sort option: by amount"
+  },
+  "sortByStore": "Store",
+  "@sortByStore": {
+    "description": "Sort option: by store name"
+  },
+
+  "settings": "Settings",
+  "@settings": {
+    "description": "Title for the settings screen"
+  },
+  "language": "Language",
+  "@language": {
+    "description": "Settings option for language selection"
+  },
+  "theme": "Theme",
+  "@theme": {
+    "description": "Settings option for theme selection"
+  },
+  "themeLight": "Light",
+  "@themeLight": {
+    "description": "Light theme option"
+  },
+  "themeDark": "Dark",
+  "@themeDark": {
+    "description": "Dark theme option"
+  },
+  "themeSystem": "System",
+  "@themeSystem": {
+    "description": "System theme option (follows OS)"
+  },
+  "storageMode": "Storage Mode",
+  "@storageMode": {
+    "description": "Settings option for storage mode"
+  },
+  "cloudAndDevice": "Cloud & Device",
+  "@cloudAndDevice": {
+    "description": "Storage mode: synced to cloud and stored locally"
+  },
+  "deviceOnly": "Device Only",
+  "@deviceOnly": {
+    "description": "Storage mode: stored only on device"
+  },
+  "warrantyReminders": "Warranty Reminders",
+  "@warrantyReminders": {
+    "description": "Settings option for warranty reminder notifications"
+  },
+  "defaultCurrency": "Default Currency",
+  "@defaultCurrency": {
+    "description": "Settings option for default currency"
+  },
+  "appLock": "App Lock",
+  "@appLock": {
+    "description": "Settings section for app lock options"
+  },
+  "enableAppLock": "Enable App Lock",
+  "@enableAppLock": {
+    "description": "Toggle to enable/disable app lock"
+  },
+  "biometricAuth": "Biometric Authentication",
+  "@biometricAuth": {
+    "description": "Settings option for biometric auth (fingerprint/face)"
+  },
+  "pinCode": "PIN Code",
+  "@pinCode": {
+    "description": "Settings option for PIN code"
+  },
+  "about": "About",
+  "@about": {
+    "description": "Settings option for about/app info"
+  },
+  "version": "Version",
+  "@version": {
+    "description": "Label for the app version"
+  },
+  "privacyPolicy": "Privacy Policy",
+  "@privacyPolicy": {
+    "description": "Link to privacy policy"
+  },
+  "termsOfService": "Terms of Service",
+  "@termsOfService": {
+    "description": "Link to terms of service"
+  },
+  "signOut": "Sign Out",
+  "@signOut": {
+    "description": "Button to sign out of the account"
+  },
+  "deleteAccount": "Delete Account",
+  "@deleteAccount": {
+    "description": "Button to permanently delete the account"
+  },
+
+  "signIn": "Sign In",
+  "@signIn": {
+    "description": "Sign in button/title"
+  },
+  "signUp": "Sign Up",
+  "@signUp": {
+    "description": "Sign up button/title"
+  },
+  "email": "Email",
+  "@email": {
+    "description": "Label for the email input field"
+  },
+  "password": "Password",
+  "@password": {
+    "description": "Label for the password input field"
+  },
+  "confirmPassword": "Confirm Password",
+  "@confirmPassword": {
+    "description": "Label for the confirm password input field"
+  },
+  "forgotPassword": "Forgot Password?",
+  "@forgotPassword": {
+    "description": "Link to reset password"
+  },
+  "resetPassword": "Reset Password",
+  "@resetPassword": {
+    "description": "Title for the reset password screen"
+  },
+  "signInWithGoogle": "Sign in with Google",
+  "@signInWithGoogle": {
+    "description": "Button for Google sign-in"
+  },
+  "signInWithApple": "Sign in with Apple",
+  "@signInWithApple": {
+    "description": "Button for Apple sign-in"
+  },
+  "orContinueWith": "Or continue with",
+  "@orContinueWith": {
+    "description": "Divider text between email login and social login"
+  },
+  "alreadyHaveAccount": "Already have an account? Sign In",
+  "@alreadyHaveAccount": {
+    "description": "Link to sign in from the sign up screen"
+  },
+  "dontHaveAccount": "Don't have an account? Sign Up",
+  "@dontHaveAccount": {
+    "description": "Link to sign up from the sign in screen"
+  },
+
+  "loading": "Loading...",
+  "@loading": {
+    "description": "Generic loading indicator text"
+  },
+  "error": "Error",
+  "@error": {
+    "description": "Generic error title"
+  },
+  "retry": "Retry",
+  "@retry": {
+    "description": "Button to retry a failed action"
+  },
+  "ok": "OK",
+  "@ok": {
+    "description": "OK button"
+  },
+  "confirm": "Confirm",
+  "@confirm": {
+    "description": "Confirm button"
+  },
+  "yes": "Yes",
+  "@yes": {
+    "description": "Yes option in dialogs"
+  },
+  "no": "No",
+  "@no": {
+    "description": "No option in dialogs"
+  },
+  "success": "Success",
+  "@success": {
+    "description": "Generic success message title"
+  },
+  "warning": "Warning",
+  "@warning": {
+    "description": "Generic warning message title"
+  },
+  "close": "Close",
+  "@close": {
+    "description": "Close button"
+  },
+  "back": "Back",
+  "@back": {
+    "description": "Back navigation button"
+  },
+  "next": "Next",
+  "@next": {
+    "description": "Next button for stepping through flows"
+  },
+  "done": "Done",
+  "@done": {
+    "description": "Done button for completing flows"
+  },
+  "selectAll": "Select All",
+  "@selectAll": {
+    "description": "Action to select all items"
+  },
+  "deselectAll": "Deselect All",
+  "@deselectAll": {
+    "description": "Action to deselect all items"
+  },
+
+  "genericError": "Something went wrong. Please try again.",
+  "@genericError": {
+    "description": "Generic error message"
+  },
+  "networkError": "A network error occurred. Please check your connection.",
+  "@networkError": {
+    "description": "Error message for network failures"
+  },
+  "noInternetConnection": "No internet connection",
+  "@noInternetConnection": {
+    "description": "Error message when device is offline"
+  },
+  "sessionExpired": "Your session has expired. Please sign in again.",
+  "@sessionExpired": {
+    "description": "Error message when auth session expires"
+  },
+  "invalidInput": "Invalid input. Please check and try again.",
+  "@invalidInput": {
+    "description": "Error for invalid form input"
+  },
+  "requiredField": "This field is required",
+  "@requiredField": {
+    "description": "Validation message for empty required fields"
+  },
+
+  "syncing": "Syncing...",
+  "@syncing": {
+    "description": "Status when data is being synced"
+  },
+  "synced": "Synced",
+  "@synced": {
+    "description": "Status when data is fully synced"
+  },
+  "syncFailed": "Sync failed",
+  "@syncFailed": {
+    "description": "Status when sync failed"
+  },
+  "pendingSync": "Pending sync",
+  "@pendingSync": {
+    "description": "Status when changes are waiting to sync"
+  },
+  "lastSynced": "Last synced: {time}",
+  "@lastSynced": {
+    "description": "Shows when the last successful sync occurred",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "2 minutes ago"
+      }
+    }
+  },
+  "conflictDetected": "Conflict detected",
+  "@conflictDetected": {
+    "description": "Status when a sync conflict is found"
+  },
+
+  "confirmDelete": "Confirm Deletion",
+  "@confirmDelete": {
+    "description": "Title for delete confirmation dialog"
+  },
+  "deleteWarning": "Are you sure you want to delete this receipt?",
+  "@deleteWarning": {
+    "description": "Warning message in delete confirmation dialog"
+  },
+  "softDeleteMessage": "This receipt will be moved to the trash and permanently deleted after 30 days.",
+  "@softDeleteMessage": {
+    "description": "Explanation of soft delete behavior"
+  },
+  "permanentDeleteWarning": "This action cannot be undone. All data will be permanently deleted.",
+  "@permanentDeleteWarning": {
+    "description": "Warning for permanent deletion"
+  },
+  "recover": "Recover",
+  "@recover": {
+    "description": "Action to recover a soft-deleted item"
+  },
+  "recoverReceipt": "Recover Receipt",
+  "@recoverReceipt": {
+    "description": "Action to recover a specific deleted receipt"
+  },
+  "deletedItemsEmpty": "No deleted items",
+  "@deletedItemsEmpty": {
+    "description": "Empty state for deleted items/trash"
+  },
+
+  "exportReceipt": "Export Receipt",
+  "@exportReceipt": {
+    "description": "Action to export a single receipt"
+  },
+  "exportByDateRange": "Export by Date Range",
+  "@exportByDateRange": {
+    "description": "Action to batch export receipts by date range"
+  },
+  "selectDateRange": "Select Date Range",
+  "@selectDateRange": {
+    "description": "Prompt to select a date range for export"
+  },
+  "exportFormat": "Export Format",
+  "@exportFormat": {
+    "description": "Label for selecting the export file format"
+  },
+  "exportSuccess": "Export completed successfully",
+  "@exportSuccess": {
+    "description": "Success message after export"
+  },
+
+  "welcome": "Welcome to Warranty Vault",
+  "@welcome": {
+    "description": "Onboarding welcome title"
+  },
+  "onboardingStep1": "Capture receipts instantly with your camera or import from your gallery.",
+  "@onboardingStep1": {
+    "description": "Onboarding step 1 description"
+  },
+  "onboardingStep2": "Never miss a warranty expiry with smart reminders.",
+  "@onboardingStep2": {
+    "description": "Onboarding step 2 description"
+  },
+  "onboardingStep3": "Your data is encrypted and always under your control.",
+  "@onboardingStep3": {
+    "description": "Onboarding step 3 description"
+  },
+  "getStarted": "Get Started",
+  "@getStarted": {
+    "description": "Button to complete onboarding and enter the app"
+  },
+  "skipOnboarding": "Skip",
+  "@skipOnboarding": {
+    "description": "Button to skip the onboarding flow"
+  },
+
+  "categoryElectronics": "Electronics",
+  "@categoryElectronics": {
+    "description": "Default category: Electronics"
+  },
+  "categoryGroceries": "Groceries",
+  "@categoryGroceries": {
+    "description": "Default category: Groceries"
+  },
+  "categoryClothingApparel": "Clothing & Apparel",
+  "@categoryClothingApparel": {
+    "description": "Default category: Clothing & Apparel"
+  },
+  "categoryHomeFurniture": "Home & Furniture",
+  "@categoryHomeFurniture": {
+    "description": "Default category: Home & Furniture"
+  },
+  "categoryHealthPharmacy": "Health & Pharmacy",
+  "@categoryHealthPharmacy": {
+    "description": "Default category: Health & Pharmacy"
+  },
+  "categoryRestaurantsFood": "Restaurants & Food",
+  "@categoryRestaurantsFood": {
+    "description": "Default category: Restaurants & Food"
+  },
+  "categoryTransportation": "Transportation",
+  "@categoryTransportation": {
+    "description": "Default category: Transportation"
+  },
+  "categoryEntertainment": "Entertainment",
+  "@categoryEntertainment": {
+    "description": "Default category: Entertainment"
+  },
+  "categoryServicesSubscriptions": "Services & Subscriptions",
+  "@categoryServicesSubscriptions": {
+    "description": "Default category: Services & Subscriptions"
+  },
+  "categoryOther": "Other",
+  "@categoryOther": {
+    "description": "Default category: Other"
+  },
+
+  "warrantyActive": "Warranty Active",
+  "@warrantyActive": {
+    "description": "Label for an active warranty"
+  },
+  "warrantyExpired": "Warranty Expired",
+  "@warrantyExpired": {
+    "description": "Label for an expired warranty"
+  },
+  "noWarranty": "No Warranty",
+  "@noWarranty": {
+    "description": "Label when no warranty is set"
+  },
+  "warrantyDuration": "Warranty Duration",
+  "@warrantyDuration": {
+    "description": "Label for the warranty duration field"
+  },
+  "monthsCount": "{count, plural, =1{1 month} other{{count} months}}",
+  "@monthsCount": {
+    "description": "Pluralized month count for warranty duration",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "12"
+      }
+    }
+  },
+  "addWarranty": "Add Warranty",
+  "@addWarranty": {
+    "description": "Action to add warranty to a receipt"
+  },
+  "editWarranty": "Edit Warranty",
+  "@editWarranty": {
+    "description": "Action to edit an existing warranty"
+  },
+
+  "today": "Today",
+  "@today": {
+    "description": "Label for today's date"
+  },
+  "yesterday": "Yesterday",
+  "@yesterday": {
+    "description": "Label for yesterday's date"
+  },
+  "daysAgo": "{count, plural, =1{1 day ago} other{{count} days ago}}",
+  "@daysAgo": {
+    "description": "Pluralized relative date (e.g., '3 days ago')",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "thisWeek": "This Week",
+  "@thisWeek": {
+    "description": "Label for the current week"
+  },
+  "thisMonth": "This Month",
+  "@thisMonth": {
+    "description": "Label for the current month"
+  },
+  "dateRange": "Date Range",
+  "@dateRange": {
+    "description": "Label for a date range selector"
+  },
+  "startDate": "Start Date",
+  "@startDate": {
+    "description": "Label for the start date in a date range"
+  },
+  "endDate": "End Date",
+  "@endDate": {
+    "description": "Label for the end date in a date range"
+  },
+
+  "bulkImport": "Bulk Import",
+  "@bulkImport": {
+    "description": "Title for the bulk import feature"
+  },
+  "scanningGallery": "Scanning gallery for receipts...",
+  "@scanningGallery": {
+    "description": "Status message while scanning the photo gallery"
+  },
+  "foundImages": "{count, plural, =0{No receipt-like images found} =1{Found 1 image} other{Found {count} images}}",
+  "@foundImages": {
+    "description": "Pluralized count of images found during gallery scan",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "12"
+      }
+    }
+  },
+  "importSelected": "Import Selected",
+  "@importSelected": {
+    "description": "Button to import selected images from bulk import"
+  },
+
+  "totalReceipts": "Total Receipts",
+  "@totalReceipts": {
+    "description": "Stats label for total number of receipts"
+  },
+  "activeWarrantiesCount": "{count, plural, =0{No active warranties} =1{1 active warranty} other{{count} active warranties}}",
+  "@activeWarrantiesCount": {
+    "description": "Pluralized count of active warranties for stats",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "5"
+      }
+    }
+  },
+  "totalSpentAmount": "Total spent: {amount}",
+  "@totalSpentAmount": {
+    "description": "Stats display showing total amount spent",
+    "placeholders": {
+      "amount": {
+        "type": "String",
+        "example": "€1,234.56"
+      }
+    }
   }
 }
