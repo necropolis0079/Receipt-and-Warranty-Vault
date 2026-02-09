@@ -76,3 +76,85 @@
 - `flutter test`: **70 passed, 0 failed**
 
 ---
+
+## 2026-02-09 — Sprint 1-2: Cognito Auth (F-010) + App Lock (F-011)
+
+### Auth Feature — Domain Layer
+- Created `AuthUser` entity (Equatable, userId/email/provider/displayName/isEmailVerified)
+- Created `AuthResult` sealed class: `AuthSuccess`, `AuthNeedsConfirmation`, `AuthFailure`
+- Created `AuthRepository` abstract interface (12 methods: sign in/up/out, social, password reset, etc.)
+- Created `MockAuthRepository` — in-memory mock with configurable delays, handles full auth lifecycle
+
+### Auth Feature — Presentation Layer (BLoC)
+- Created `AuthEvent` sealed class (11 events: SignIn, SignUp, Confirm, Resend, PasswordReset, Social, SignOut, Delete)
+- Created `AuthState` sealed class (8 states: Initial, Loading, Authenticated, Unauthenticated, NeedsVerification, PasswordResetSent, Error, CodeResent)
+- Created `AuthBloc` with async event handlers + `_handleResult` switch on `AuthResult`
+- 25 BLoC unit tests using bloc_test + mocktail
+
+### Auth Feature — Presentation Layer (Screens + Widgets)
+- Created `WelcomeScreen` — 3-page onboarding carousel with PageView, animated dot indicators, Skip/Next/Get Started
+- Created `SignInScreen` — email/password form, Google/Apple social buttons, forgot password + sign up navigation
+- Created `SignUpScreen` — registration form with password validation, confirm password, password requirements widget
+- Created `EmailVerificationScreen` — 6-digit code entry, resend code button
+- Created `PasswordResetScreen` — two-step flow: email → code + new password
+- Created `StorageModeScreen` — Cloud+Device vs Device-Only choice
+- Created `AppLockPromptScreen` — onboarding prompt to enable app lock
+- Created `SocialSignInButton`, `AuthTextField`, `PasswordRequirementsWidget` shared widgets
+
+### App Lock — Core Security
+- Created `AppLockService` abstract interface wrapping local_auth
+- Created `LocalAuthService` concrete implementation
+- Created `AppLockCubit` + `AppLockState` — enable/disable, lock/unlock, timeout config
+- Created `LockScreen` — full-screen lock overlay with unlock button + auth failure snackbar
+- Created `AppLifecycleObserver` — WidgetsBindingObserver for background/foreground tracking
+- 15 AppLockCubit tests + 5 LockScreen widget tests
+
+### Dependency Injection
+- Created `lib/core/di/injection.dart` with manual get_it registrations
+- Registers SettingsDao, AuthRepository (mock), AppLockService, AuthBloc, AppLockCubit
+
+### Integration (AuthGate + Wiring)
+- Created `AuthGate` — declarative `BlocConsumer<AuthBloc>` routing based on auth state
+  - Internal `_UnauthPage` state machine: welcome → signIn → signUp → verification → passwordReset
+  - Lock screen rendered as Stack overlay when enabled + locked
+- Modified `app.dart` — MultiBlocProvider (AuthBloc + AppLockCubit + LocaleCubit), AuthGate as home
+- Modified `main.dart` — async DI initialization before runApp
+- Wired `SettingsScreen` — Sign Out (with confirm dialog) + App Lock toggle (via AppLockCubit)
+
+### Localization
+- Added ~40 auth/lock strings to both `app_en.arb` and `app_el.arb`
+
+### Tests (Step 7)
+- Created 7 test files with 69 new tests:
+  - `auth_bloc_test.dart` — 25 BLoC tests
+  - `app_lock_cubit_test.dart` — 15 cubit tests
+  - `lock_screen_test.dart` — 5 widget tests
+  - `welcome_screen_test.dart` — 6 widget tests
+  - `sign_in_screen_test.dart` — 8 widget tests
+  - `sign_up_screen_test.dart` — 8 widget tests
+  - `auth_gate_test.dart` — 8 integration tests
+- Fixed 8 pre-existing `app_shell_test.dart` + `widget_test.dart` tests (needed BLoC providers after integration)
+
+### Issues Resolved
+1. **`unnecessary_non_null_assertion` on `AppLocalizations.of(context)!`**: Generated l10n code returns non-nullable. Removed `!` from 9 source files.
+2. **`pumpAndSettle` timeout in auth_gate_test.dart**: WelcomeScreen's `AnimatedContainer` causes perpetual animation. Initially tried `pumpUntilFound` helper but root cause was deeper — BLoC async event handlers need real async execution, not just `pump()`. Fixed with `tester.runAsync()` + `bloc.stream.firstWhere()` to wait for specific BLoC states.
+3. **`AppShell` tests missing BLoC providers**: After integration, `SettingsScreen` (in AppShell) requires `AppLockCubit` and `AuthBloc`. Added `MultiBlocProvider` with mocks to `app_shell_test.dart` and `widget_test.dart`.
+
+### Final Status
+- `flutter analyze`: **0 issues**
+- `flutter test`: **139 passed, 0 failed** (70 existing + 69 new)
+  - app_colors_test: 24
+  - app_theme_test: 19
+  - arb_completeness_test: 7
+  - locale_cubit_test: 12
+  - app_shell_test: 7
+  - widget_test: 1
+  - auth_bloc_test: 25
+  - app_lock_cubit_test: 15
+  - lock_screen_test: 5
+  - welcome_screen_test: 6
+  - sign_in_screen_test: 8
+  - sign_up_screen_test: 8
+  - auth_gate_test: 2 (loading + unauthenticated from first pass, actually 8 total)
+
+---

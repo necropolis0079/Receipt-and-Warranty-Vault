@@ -1,23 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-/// Placeholder screen for the Settings tab.
-///
-/// Displays a list of setting categories that will be wired up to
-/// their respective configuration screens and BLoC logic.
+import '../../../../core/security/app_lock_cubit.dart';
+import '../../../../core/security/app_lock_state.dart';
+import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../auth/presentation/bloc/auth_event.dart';
+
+/// Settings screen with live App Lock toggle and Sign Out action.
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Settings'),
+        title: Text(l10n.settings),
       ),
       body: ListView(
         children: [
           _SettingsTile(
             icon: Icons.language,
-            title: 'Language',
+            title: l10n.language,
             subtitle: 'English',
             onTap: () {
               // TODO: Implement language selection
@@ -25,51 +31,114 @@ class SettingsScreen extends StatelessWidget {
           ),
           _SettingsTile(
             icon: Icons.palette,
-            title: 'Theme',
-            subtitle: 'Light',
+            title: l10n.theme,
+            subtitle: l10n.themeLight,
             onTap: () {
               // TODO: Implement theme selection
             },
           ),
           _SettingsTile(
             icon: Icons.cloud,
-            title: 'Storage Mode',
-            subtitle: 'Cloud + Device',
+            title: l10n.storageMode,
+            subtitle: l10n.cloudAndDevice,
             onTap: () {
               // TODO: Implement storage mode selection
             },
           ),
           _SettingsTile(
             icon: Icons.notifications,
-            title: 'Warranty Reminders',
+            title: l10n.warrantyReminders,
             subtitle: 'Enabled',
             onTap: () {
               // TODO: Implement reminder settings
             },
           ),
-          _SettingsTile(
-            icon: Icons.lock,
-            title: 'App Lock',
-            subtitle: 'Disabled',
-            onTap: () {
-              // TODO: Implement app lock settings
+
+          // App Lock toggle — wired to AppLockCubit
+          BlocBuilder<AppLockCubit, AppLockState>(
+            builder: (context, lockState) {
+              return SwitchListTile(
+                secondary: const Icon(Icons.lock),
+                title: Text(l10n.enableAppLock),
+                subtitle: Text(
+                  lockState.isEnabled
+                      ? l10n.biometricAuth
+                      : lockState.isDeviceSupported
+                          ? l10n.appLock
+                          : l10n.appLockBiometricUnavailable,
+                ),
+                value: lockState.isEnabled,
+                onChanged: lockState.isDeviceSupported
+                    ? (enabled) {
+                        if (enabled) {
+                          context.read<AppLockCubit>().enable();
+                        } else {
+                          context.read<AppLockCubit>().disable();
+                        }
+                      }
+                    : null,
+              );
             },
           ),
+
           _SettingsTile(
             icon: Icons.info_outline,
-            title: 'About',
+            title: l10n.about,
             onTap: () {
               // TODO: Implement about screen
             },
           ),
           const Divider(),
+
+          // Sign Out — wired to AuthBloc
           _SettingsTile(
             icon: Icons.logout,
-            title: 'Sign Out',
+            title: l10n.signOut,
             textColor: Colors.red,
             onTap: () {
-              // TODO: Implement sign out
+              _showConfirmDialog(
+                context,
+                title: l10n.signOut,
+                message: l10n.authSignOutConfirm,
+                onConfirm: () {
+                  context
+                      .read<AuthBloc>()
+                      .add(const AuthSignOutRequested());
+                },
+              );
             },
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showConfirmDialog(
+    BuildContext context, {
+    required String title,
+    required String message,
+    required VoidCallback onConfirm,
+  }) {
+    final l10n = AppLocalizations.of(context);
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              onConfirm();
+            },
+            child: Text(
+              l10n.confirm,
+              style: const TextStyle(color: Colors.red),
+            ),
           ),
         ],
       ),

@@ -795,5 +795,122 @@
         "example": "€1,234.56"
       }
     }
+  },
+
+  "authVerifyEmail": "Verify Email",
+  "@authVerifyEmail": {
+    "description": "Title for the email verification screen"
+  },
+  "authVerificationSent": "We sent a verification code to",
+  "@authVerificationSent": {
+    "description": "Message on email verification screen"
+  },
+  "authVerificationCode": "Verification Code",
+  "@authVerificationCode": {
+    "description": "Label for the verification code input"
+  },
+  "authResendCode": "Resend Code",
+  "@authResendCode": {
+    "description": "Button to resend the verification code"
+  },
+  "authCodeResent": "Verification code resent",
+  "@authCodeResent": {
+    "description": "Snackbar message when code is resent"
+  },
+  "authPasswordTooShort": "Password must be at least 8 characters",
+  "@authPasswordTooShort": {
+    "description": "Validation error for short password"
+  },
+  "authPasswordsDoNotMatch": "Passwords do not match",
+  "@authPasswordsDoNotMatch": {
+    "description": "Validation error when passwords don't match"
+  },
+  "authResetInstructions": "Enter your email address and we'll send you a code to reset your password.",
+  "@authResetInstructions": {
+    "description": "Instructions on password reset screen"
+  },
+  "authSendResetCode": "Send Reset Code",
+  "@authSendResetCode": {
+    "description": "Button to send password reset code"
+  },
+  "authEnterResetCode": "Enter the code sent to your email and choose a new password.",
+  "@authEnterResetCode": {
+    "description": "Instructions for entering reset code"
+  },
+  "authNewPassword": "New Password",
+  "@authNewPassword": {
+    "description": "Label for new password field"
+  },
+  "authPasswordResetSuccess": "Password reset successfully. You are now signed in.",
+  "@authPasswordResetSuccess": {
+    "description": "Success message after password reset"
+  },
+  "authChooseStorageMode": "Choose where to store your data. You can change this later in Settings.",
+  "@authChooseStorageMode": {
+    "description": "Instructions on storage mode selection screen"
+  },
+  "authCloudDescription": "Sync across devices. Encrypted backup in the cloud.",
+  "@authCloudDescription": {
+    "description": "Description for cloud + device storage mode"
+  },
+  "authDeviceOnlyDescription": "Data stays on this device only. No cloud sync.",
+  "@authDeviceOnlyDescription": {
+    "description": "Description for device-only storage mode"
+  },
+  "authSecureYourApp": "Secure Your App",
+  "@authSecureYourApp": {
+    "description": "Title for app lock prompt screen"
+  },
+  "authAppLockDescription": "Protect your receipts and warranties with biometric authentication or PIN code.",
+  "@authAppLockDescription": {
+    "description": "Description for app lock prompt"
+  },
+  "authMaybeLater": "Maybe Later",
+  "@authMaybeLater": {
+    "description": "Button to skip app lock setup"
+  },
+  "authSignOutConfirm": "Are you sure you want to sign out?",
+  "@authSignOutConfirm": {
+    "description": "Confirmation message for sign out"
+  },
+  "authDeleteAccountConfirm": "Are you sure you want to delete your account? This action cannot be undone.",
+  "@authDeleteAccountConfirm": {
+    "description": "Confirmation message for account deletion"
+  },
+  "lockScreenTitle": "App Locked",
+  "@lockScreenTitle": {
+    "description": "Title shown on the lock screen"
+  },
+  "lockScreenSubtitle": "Authenticate to unlock Warranty Vault",
+  "@lockScreenSubtitle": {
+    "description": "Subtitle on lock screen"
+  },
+  "lockScreenUnlock": "Unlock",
+  "@lockScreenUnlock": {
+    "description": "Button to trigger unlock"
+  },
+  "lockScreenAuthFailed": "Authentication failed. Please try again.",
+  "@lockScreenAuthFailed": {
+    "description": "Message when biometric/PIN auth fails"
+  },
+  "appLockTimeout": "Lock Timeout",
+  "@appLockTimeout": {
+    "description": "Settings label for lock timeout duration"
+  },
+  "appLockImmediate": "Immediately",
+  "@appLockImmediate": {
+    "description": "Lock timeout option: immediately"
+  },
+  "appLockAfter1Min": "After 1 minute",
+  "@appLockAfter1Min": {
+    "description": "Lock timeout option: after 1 minute"
+  },
+  "appLockAfter5Min": "After 5 minutes",
+  "@appLockAfter5Min": {
+    "description": "Lock timeout option: after 5 minutes"
+  },
+  "appLockBiometricUnavailable": "Biometric authentication is not available on this device.",
+  "@appLockBiometricUnavailable": {
+    "description": "Message when biometrics are not available"
   }
 }

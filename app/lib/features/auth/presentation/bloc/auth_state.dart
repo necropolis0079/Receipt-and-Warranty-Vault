@@ -1,0 +1,62 @@
+import 'package:equatable/equatable.dart';
+
+import '../../domain/entities/auth_user.dart';
+
+sealed class AuthState extends Equatable {
+  const AuthState();
+
+  @override
+  List<Object?> get props => [];
+}
+
+class AuthInitial extends AuthState {
+  const AuthInitial();
+}
+
+class AuthLoading extends AuthState {
+  const AuthLoading();
+}
+
+class AuthAuthenticated extends AuthState {
+  const AuthAuthenticated(this.user);
+  final AuthUser user;
+
+  @override
+  List<Object?> get props => [user];
+}
+
+class AuthUnauthenticated extends AuthState {
+  const AuthUnauthenticated();
+}
+
+class AuthNeedsVerification extends AuthState {
+  const AuthNeedsVerification({required this.email});
+  final String email;
+
+  @override
+  List<Object?> get props => [email];
+}
+
+class AuthPasswordResetSent extends AuthState {
+  const AuthPasswordResetSent({required this.email});
+  final String email;
+
+  @override
+  List<Object?> get props => [email];
+}
+
+class AuthError extends AuthState {
+  const AuthError(this.message);
+  final String message;
+
+  @override
+  List<Object?> get props => [message];
+}
+
+class AuthCodeResent extends AuthState {
+  const AuthCodeResent({required this.email});
+  final String email;
+
+  @override
+  List<Object?> get props => [email];
+}
