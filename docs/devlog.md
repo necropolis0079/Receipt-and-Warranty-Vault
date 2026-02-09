@@ -289,3 +289,159 @@
   - expiring_bloc_reminder_test.dart (ExpiringBloc reminder scheduling)
 
 ---
+
+## Sprint 7-8: AWS Infrastructure — CDK (2026-02-09)
+
+### What Was Built
+
+**CDK Project Scaffolding (`infra/`):**
+- `app.py` — CDK App entry point, instantiates `ReceiptVaultStack` with eu-west-1
+- `cdk.json` — CDK configuration pointing to app.py
+- `requirements.txt` — aws-cdk-lib>=2.170.0, constructs>=10.0.0
+
+**Shared Lambda Layer (`infra/lambda_layer/python/shared/`):**
+- `response.py` — API Gateway response builders: `success()`, `error()`, `created()`, `no_content()` with CORS headers
+- `dynamodb.py` — DynamoDB key builders: `build_pk()`, `build_receipt_sk()`, `build_categories_sk()`, `build_settings_sk()`, `extract_receipt_id()`, `extract_user_id()`
+- `auth.py` — `get_user_id(event)` extracts Cognito `sub` from API Gateway event context
+- `errors.py` — Custom exceptions: `NotFoundError`, `ForbiddenError`, `ConflictError`, `ValidationError`
+
+**10 Lambda Function Handlers (`infra/lambdas/`):**
+
+| Function | Trigger | Key Operations |
+|----------|---------|----------------|
+| `receipt_crud` | API Gateway | 12-route dispatcher: receipts CRUD, warranties/expiring, user profile/settings |
+| `ocr_refine` | API Gateway | Bedrock Claude Haiku 4.5 invocation (Messages API), base64 image, confidence fallback to Sonnet |
+| `sync_handler` | API Gateway | Delta pull (GSI-6 KEYS_ONLY → BatchGetItem), batch push (field-level merge), full reconciliation |
+| `thumbnail_generator` | S3 event | Pillow center-crop resize to 200×300 JPEG 70%, skip if thumbnail path |
+| `warranty_checker` | EventBridge daily | Scan users → query GSI-4 for expiring warranties → SNS notifications |
+| `weekly_summary` | EventBridge weekly | Query opted-in users → compute warranty stats → SNS digest |
+| `user_deletion` | API Gateway | GDPR cascade: Cognito AdminDeleteUser → DynamoDB batch delete → S3 versioned delete |
+| `export_handler` | API Gateway | Query receipts → download images → create ZIP in /tmp → upload to export bucket → presigned URL |
+| `category_handler` | API Gateway | 10 default categories + user custom CRUD, optimistic locking with version check |
+| `presigned_url_generator` | API Gateway | Upload (PUT) and download (GET) presigned URL generation with SSE-KMS |
+
+**CDK Stack — `ReceiptVaultStack` (`infra/stacks/receipt_vault_stack.py`, ~1042 lines):**
+
+All 12 AWS services provisioned:
+
+1. **KMS CMK** (`alias/receiptvault-s3-cmk`) — AES-256 symmetric, auto-rotation, key policy for Lambda + S3 + CloudFront
+2. **DynamoDB Table** (`ReceiptVault`) — on-demand billing, PITR, TTL on `ttl` attribute, deletion protection, 6 GSIs:
+   - GSI-1 ByUserDate (GSI1PK/GSI1SK)
+   - GSI-2 ByUserCategory (GSI2PK/GSI2SK)
+   - GSI-3 ByUserStore (GSI3PK/GSI3SK)
+   - GSI-4 ByWarrantyExpiry (GSI4PK/warrantyExpiryDate) — sparse index
+   - GSI-5 ByUserStatus (GSI5PK/GSI5SK)
+   - GSI-6 ByUpdatedAt (GSI6PK/GSI6SK) — KEYS_ONLY projection
+3. **S3 Image Bucket** — SSE-KMS with CMK + Bucket Keys, versioning, Intelligent-Tiering, block all public access, lifecycle (30-day noncurrent), S3 event → thumbnail Lambda
+4. **S3 Export Bucket** — SSE-KMS, 7-day object expiration, block all public access
+5. **S3 Access Logs Bucket** — SSE-S3, 90-day expiration, no versioning
+6. **Cognito User Pool** — email sign-in, email verification (code), password policy (8+ chars, upper/lower/number/symbol), optional TOTP MFA, account recovery via email
+7. **Cognito App Client** — SRP + CUSTOM + REFRESH auth flows, 1h access/id tokens, 30d refresh, no secret (public mobile client), OAuth authorization_code grant
+8. **Lambda Layer** — Python 3.12, ARM_64, shared utilities
+9. **10 Lambda Functions** — Python 3.12, ARM_64, individual IAM roles (least-privilege), environment variables, 30-day log retention
+10. **API Gateway REST API** — Cognito User Pool authorizer, `prod` stage, CORS enabled, 20 endpoints mapped to 6 Lambda functions
+11. **CloudFront Distribution** — OAC (not legacy OAI), 24h cache on thumbnail prefix, PriceClass_100 (NA + Europe), HTTP/2 + IPv6
+12. **3 SNS Topics** — warranty-expiring, export-ready, ops-alerts
+13. **2 EventBridge Rules** — daily warranty check (8AM UTC), weekly summary (Monday 9AM UTC), 2 retries
+14. **5 CloudWatch Alarms** — HighLambdaErrorRate, SyncFailures, BedrockThrottling, HighLatencyOCR, UserDeletionFailure
+15. **Mandatory Tags** — Project=WarrantyVault, Environment=prod, Owner=necropolis0079, ManagedBy=CDK
+16. **6 CfnOutputs** — API URL, Cognito Pool ID, Cognito Client ID, S3 Bucket Name, CloudFront Domain, DynamoDB Table Name
+
+### Implementation Approach
+- 4 parallel agents created all 21 files simultaneously:
+  - Agent 1: CDK scaffolding + stack definition
+  - Agent 2: Shared Lambda layer (4 modules)
+  - Agent 3: Lambda handlers 1-5 (receipt_crud, ocr_refine, sync_handler, thumbnail_generator, warranty_checker)
+  - Agent 4: Lambda handlers 6-10 (weekly_summary, user_deletion, export_handler, category_handler, presigned_url_generator)
+- Post-creation review caught 5 categories of bugs (see below)
+
+### Bugs Found and Fixed During Review
+
+**Bug 1: `error()` positional argument order mismatch (4 files)**
+- `error(404, "Route not found")` passed status_code as message and message as status_code
+- `response.py` signature: `error(message, status_code=400, code="BAD_REQUEST")`
+- Fixed in: `receipt_crud`, `ocr_refine`, `sync_handler`, `presigned_url_generator`
+- Changed all to keyword args: `error("Route not found", status_code=404, code="NOT_FOUND")`
+
+**Bug 2: GSI attribute name case mismatch (CDK stack)**
+- CDK defined lowercase `gsi1pk`/`gsi1sk`, handlers wrote uppercase `GSI1PK`/`GSI1SK`
+- DynamoDB is case-sensitive — GSIs would never index items
+- Fixed: changed all 12 CDK GSI attribute definitions to uppercase
+- Special case: GSI-4 sort key changed from `gsi4sk` to `warrantyExpiryDate` to match handler queries
+
+**Bug 3: GSI-1 sort key reference in export_handler**
+- Queried with `Key("purchaseDate")` but GSI-1 sort key attribute is `GSI1SK`
+- Fixed to `Key("GSI1SK")`
+
+**Bug 4: Missing GSI-4 PK write in receipt_crud**
+- `create_receipt` never set `GSI4PK`, so warranties wouldn't appear in GSI-4
+- Added: `item["GSI4PK"] = f"{build_pk(user_id)}#ACTIVE"` when `warrantyExpiryDate` exists
+
+**Bug 5: SNS environment variable name mismatch (3 files)**
+- CDK sets `SNS_TOPIC_ARN` but handlers read `SNS_PLATFORM_ARN`
+- Fixed in: `warranty_checker`, `weekly_summary`, `export_handler`
+- Also fixed `TargetArn=` → `TopicArn=` (correct for SNS topics vs platform endpoints)
+
+### Key Decisions
+- **Single stack** — All resources in one `ReceiptVaultStack`. Simpler for v1. Multi-stack in v2.
+- **Lambda stubs, not full logic** — Handlers have proper structure, routing, error handling, and shared layer, but complex business logic uses placeholder implementations with TODO markers. Full logic in Sprint 9-10.
+- **No `cdk deploy`** — Synthesize and validate only. Deployment requires user confirmation (real AWS costs).
+- **SNS platform apps as placeholders** — FCM/APNs require Firebase/Apple keys not yet available. Topics + Lambda code ready; platform endpoint registration deferred.
+- **Export bucket separate from image bucket** — Different lifecycle (7-day vs permanent), different access patterns.
+- **GSI attribute naming convention** — UPPERCASE (`GSI1PK`, `GSI1SK`, etc.) to match DynamoDB handler code throughout.
+
+### Files Created (21 total)
+```
+infra/
+├── app.py
+├── cdk.json
+├── requirements.txt
+├── stacks/
+│   ├── __init__.py
+│   └── receipt_vault_stack.py      (~1042 lines)
+├── lambda_layer/
+│   └── python/
+│       └── shared/
+│           ├── __init__.py
+│           ├── response.py
+│           ├── dynamodb.py
+│           ├── auth.py
+│           └── errors.py
+└── lambdas/
+    ├── receipt_crud/handler.py      (~499 lines)
+    ├── ocr_refine/handler.py        (~243 lines)
+    ├── sync_handler/handler.py      (~391 lines)
+    ├── thumbnail_generator/
+    │   ├── handler.py               (~113 lines)
+    │   └── requirements.txt
+    ├── warranty_checker/handler.py   (~188 lines)
+    ├── weekly_summary/handler.py     (~191 lines)
+    ├── user_deletion/handler.py      (~210 lines)
+    ├── export_handler/handler.py     (~205 lines)
+    ├── category_handler/handler.py   (~187 lines)
+    └── presigned_url_generator/handler.py (~173 lines)
+```
+
+### Additional Fix During Verification
+- **`cdk.json` Python command**: Changed `python3 app.py` → `python app.py` (Windows compatibility)
+- **`method_options` keyword error**: CDK `add_method()` doesn't accept `method_options=` keyword. Changed to unpacking dict with `**auth_method_opts` (authorizer + authorization_type) across 22 API method definitions.
+
+### Verification: `cdk synth`
+- `pip install -r requirements.txt` — installed aws-cdk-lib 2.238.0, constructs 10.4.5
+- `cdk synth` — SUCCESS, generated 195 CloudFormation resources:
+  - 1 DynamoDB Table, 3 S3 Buckets, 1 KMS Key, 1 Cognito User Pool + Client
+  - 13 Lambda Functions (10 handlers + 3 custom resource helpers), 1 Lambda Layer
+  - 1 API Gateway REST API + 21 Resources + 44 Methods + Cognito Authorizer
+  - 1 CloudFront Distribution + OAC, 3 SNS Topics, 2 EventBridge Rules, 5 CloudWatch Alarms
+  - 14 IAM Roles, 8 Outputs
+- Deprecation warnings (non-blocking): `pointInTimeRecovery` → use `pointInTimeRecoverySpecification`, `logRetention` → use `logGroup`
+- No errors, template validates clean
+
+### Final Status
+- All 21+ files created, reviewed, and bugs fixed
+- 7 bug categories found and fixed across 9 files
+- `cdk synth` generates valid CloudFormation template (195 resources, 8 outputs)
+- Flutter test suite (334 tests) unaffected — no Flutter code changed
+- Stack NOT deployed — requires user confirmation (real AWS costs)
+
+---

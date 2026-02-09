@@ -5,13 +5,15 @@
 
 ## Last Updated
 - **Timestamp**: 2026-02-09
-- **Phase**: Sprint 5-6 — Search, Notifications, Export & Polish COMPLETE
+- **Phase**: Sprint 7-8 — AWS Infrastructure (CDK) COMPLETE
 
 ## Current Status
 - Flutter project at `app/` with clean architecture (core + 5 feature modules)
-- 22 dependencies in pubspec.yaml (added flutter_local_notifications, timezone, share_plus, csv)
+- AWS CDK project at `infra/` with single `ReceiptVaultStack` provisioning all 12 AWS services
+- 22 Flutter dependencies in pubspec.yaml
+- 2 CDK dependencies: aws-cdk-lib>=2.170.0, constructs>=10.0.0
 - GitHub Actions CI pipeline (.github/workflows/ci.yml)
-- All Sprints 1-6 features implemented and tested
+- All Sprints 1-8 features implemented and tested/reviewed
 
 ### Completed Features (Sprint 1-2)
 - **Theme + design system**: AppColors, AppSpacing, AppRadius, AppShadows, AppTypography, AppTheme — 43 tests
@@ -34,32 +36,46 @@
 - **Integration**: DI updated, AppShell capture flow, app-level BLoC providers, Settings -> Manage Categories, 10 new l10n keys
 
 ### Completed Features (Sprint 5-6 — Search, Notifications, Export & Polish)
-- **Notification service**: NotificationService interface, LocalNotificationService, MockNotificationService, ReminderScheduler (7/1/0 days before expiry)
-- **Search BLoC + UI**: SearchBloc (debounced 300ms, restartable), SearchFilters (client-side filtering by category/date/amount/warranty), SearchScreen rewrite, SearchFilterBar, SearchResultList
-- **Export/Share**: ExportService interface, DeviceExportService (share_plus text+files, CSV batch), MockExportService
-- **Trash/Recovery**: TrashCubit, TrashScreen (view, restore, permanently delete soft-deleted receipts)
-- **Notification wiring**: AddReceiptBloc schedules reminders on save (warranty > 0), ExpiringBloc schedules reminders on load
-- **Integration**: DI updated (NotificationService, ExportService, ReminderScheduler, SearchBloc, TrashCubit), Settings wired to Trash + Category Management, ~20 new l10n keys (EN + EL)
+- **Notification service**: NotificationService interface, LocalNotificationService, MockNotificationService, ReminderScheduler
+- **Search BLoC + UI**: SearchBloc (debounced 300ms), SearchFilters, SearchScreen, SearchFilterBar, SearchResultList
+- **Export/Share**: ExportService interface, DeviceExportService, MockExportService
+- **Trash/Recovery**: TrashCubit, TrashScreen
+- **Notification wiring**: AddReceiptBloc + ExpiringBloc schedule reminders
+- **Integration**: DI updated, Settings wired to Trash + Category Management, ~20 new l10n keys
 
-### Test Suite: 334 PASSED, 0 FAILED
+### Completed Features (Sprint 7-8 — AWS Infrastructure CDK)
+- **CDK project**: `infra/` directory with app.py, cdk.json, requirements.txt
+- **Shared Lambda layer**: 4 modules (response.py, dynamodb.py, auth.py, errors.py)
+- **10 Lambda handlers**: receipt_crud, ocr_refine, sync_handler, thumbnail_generator, warranty_checker, weekly_summary, user_deletion, export_handler, category_handler, presigned_url_generator
+- **CDK stack** (~1042 lines): DynamoDB (6 GSIs), KMS CMK, 3 S3 buckets, Cognito (User Pool + App Client), Lambda Layer, 10 Lambda functions, API Gateway (20 endpoints), CloudFront (OAC), 3 SNS topics, 2 EventBridge rules, 5 CloudWatch alarms, mandatory tags, 6 CfnOutputs
+- **5 bug categories fixed**: error() arg order, GSI case mismatch, GSI-1 SK reference, missing GSI-4 PK write, SNS env var mismatch
+- **21 files created** in `infra/` directory
+
+### Test Suite: 334 PASSED, 0 FAILED (Flutter)
 - `flutter analyze`: 0 issues
-- `flutter test`: 334 passed (270 existing + 64 new in Sprint 5-6)
-- New test files: notification_service_test, reminder_scheduler_test, search_bloc_test, search_filters_test, search_screen_test, export_service_test, trash_cubit_test, add_receipt_reminder_test, expiring_bloc_reminder_test
+- `flutter test`: 334 passed
+- CDK: `cdk synth` SUCCESS — 195 CloudFormation resources, 8 outputs, no errors
 
 ## What Comes Next
-- Sprint 5-6 is COMPLETE
-- Next: Sprint 7-8 — AWS infrastructure deployment (CDK, API Gateway, Lambda, DynamoDB, S3, Cognito)
-- OR: Sprint 7-8 — Sync engine + cloud integration
-- See `docs/14-roadmap.md` for full sprint plan
+- Sprint 7-8 CDK is COMPLETE (code written, reviewed, bugs fixed)
+- `cdk synth` PASSED — 195 resources, 8 outputs, template validates clean
+- Pending: Git commit of all infra/ files
+- Next: Sprint 9-10 — Sync Engine + Cloud Integration (connect Flutter app to AWS backend)
+  - Amplify Flutter Gen 2 auth integration (swap MockAuthRepository for AmplifyAuthRepository)
+  - Sync engine implementation (custom delta sync, field-level merge, conflict resolution)
+  - API client layer (Dio + interceptors + presigned URLs)
+  - Full Lambda business logic (replace TODO stubs)
 
 ## Key Reminders
 - Read CLAUDE.md for ALL project decisions
 - Read docs/devlog.md for what happened and why
-- AWS profile is `warrantyvault`
+- AWS profile is `warrantyvault`, account 882868333122, region eu-west-1
+- CDK stack has NOT been deployed — only synthesized/validated
 - Auth strategy: mock-first, swap to AmplifyAuthRepository when Cognito deployed
-- Capture strategy: mock-first for ImagePipelineService and OcrService; real implementations wrap native plugins
-- Notification strategy: mock-first for NotificationService; LocalNotificationService wraps flutter_local_notifications on device
-- Export strategy: mock-first for ExportService; DeviceExportService wraps share_plus on device
-- BLoC for complex flows (Auth, AddReceipt, Vault, Expiring, Search), Cubit for simple state (AppLock, Locale, CategoryManagement, Trash)
-- VaultBloc and ExpiringBloc provided at app level (needed by pushed routes like ReceiptDetailScreen)
-- SearchBloc provided at app level (SearchScreen is a tab in AppShell)
+- Capture strategy: mock-first for ImagePipelineService and OcrService
+- Notification strategy: mock-first for NotificationService
+- Export strategy: mock-first for ExportService
+- Lambda handlers are stubs with TODO markers — full logic in Sprint 9-10
+- GSI attribute convention: UPPERCASE (GSI1PK, GSI1SK, etc.) throughout both CDK and handlers
+- GSI-4 sort key is `warrantyExpiryDate` (not GSI4SK) — matches handler queries directly
+- SNS env var is `SNS_TOPIC_ARN` (not SNS_PLATFORM_ARN) — uses TopicArn in publish calls

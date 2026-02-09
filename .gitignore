@@ -40,7 +40,7 @@ build/
 venv/
 
 # CDK
-backend/cdk.out/
+infra/cdk.out/
 node_modules/
 
 # IDE
