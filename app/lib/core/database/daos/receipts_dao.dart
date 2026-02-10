@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:drift/drift.dart';
 
 import '../app_database.dart';
@@ -147,14 +149,16 @@ class ReceiptsDao extends DatabaseAccessor<AppDatabase>
         .get();
   }
 
-  /// Mark a receipt as successfully synced.
-  Future<void> markSynced(String receiptId) {
-    return (update(receipts)
-          ..where((r) => r.receiptId.equals(receiptId)))
-        .write(ReceiptsCompanion(
+  /// Mark a receipt as successfully synced, optionally updating version.
+  Future<void> markSynced(String receiptId, [int? serverVersion]) {
+    final companion = ReceiptsCompanion(
       syncStatus: const Value('synced'),
       lastSyncedAt: Value(DateTime.now().toIso8601String()),
-    ));
+      version: serverVersion != null ? Value(serverVersion) : const Value.absent(),
+    );
+    return (update(receipts)
+          ..where((r) => r.receiptId.equals(receiptId)))
+        .write(companion);
   }
 
   /// Mark a receipt as having a sync conflict.
@@ -201,6 +205,69 @@ class ReceiptsDao extends DatabaseAccessor<AppDatabase>
               r.deletedAt.isNotNull() &
               r.deletedAt.isSmallerThanValue(cutoff)))
         .go();
+  }
+
+  /// Upsert a receipt from sync data (server-sourced Map).
+  ///
+  /// Inserts if the receipt doesn't exist locally, updates if it does.
+  /// Marks as synced automatically.
+  Future<void> upsertFromSync(Map<String, dynamic> data) async {
+    final receiptId = data['receiptId'] as String;
+    final now = DateTime.now().toIso8601String();
+
+    final companion = ReceiptsCompanion(
+      receiptId: Value(receiptId),
+      userId: Value(data['userId'] as String? ?? ''),
+      storeName: Value(data['storeName'] as String?),
+      extractedMerchantName: Value(data['extractedMerchantName'] as String?),
+      purchaseDate: Value(data['purchaseDate'] as String?),
+      extractedDate: Value(data['extractedDate'] as String?),
+      totalAmount: Value(data['totalAmount'] != null
+          ? (data['totalAmount'] as num).toDouble()
+          : null),
+      extractedTotal: Value(data['extractedTotal'] != null
+          ? (data['extractedTotal'] as num).toDouble()
+          : null),
+      currency: Value(data['currency'] as String? ?? 'EUR'),
+      category: Value(data['category'] as String?),
+      warrantyMonths: Value(data['warrantyMonths'] as int? ?? 0),
+      warrantyExpiryDate: Value(data['warrantyExpiryDate'] as String?),
+      status: Value(data['status'] as String? ?? 'active'),
+      imageKeys: Value(_encodeList(data['imageKeys'])),
+      thumbnailKeys: Value(_encodeList(data['thumbnailKeys'])),
+      ocrRawText: Value(data['ocrRawText'] as String?),
+      llmConfidence: Value(data['llmConfidence'] as int? ?? 0),
+      userNotes: Value(data['userNotes'] as String?),
+      userTags: Value(_encodeList(data['userTags'])),
+      isFavorite: Value(data['isFavorite'] as bool? ?? false),
+      userEditedFields: Value(_encodeList(data['userEditedFields'])),
+      createdAt: Value(data['createdAt'] as String? ?? now),
+      updatedAt: Value(data['updatedAt'] as String? ?? now),
+      version: Value(data['version'] as int? ?? 1),
+      deletedAt: Value(data['deletedAt'] as String?),
+      syncStatus: const Value('synced'),
+      lastSyncedAt: Value(now),
+    );
+
+    await into(receipts).insertOnConflictUpdate(companion);
+  }
+
+  /// Get all receipts as a lightweight list for building a sync manifest.
+  Future<List<ReceiptEntry>> getAllForManifest() {
+    return (select(receipts)
+          ..orderBy([(r) => OrderingTerm.asc(r.receiptId)]))
+        .get();
+  }
+
+  /// Encode a dynamic list (from JSON) into a JSON string for storage.
+  static String? _encodeList(dynamic list) {
+    if (list == null) return null;
+    if (list is List) {
+      if (list.isEmpty) return null;
+      return jsonEncode(list.map((e) => e.toString()).toList());
+    }
+    if (list is String) return list;
+    return null;
   }
 
   /// ISO 8601 date-only helper (YYYY-MM-DD).

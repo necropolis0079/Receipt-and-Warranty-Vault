@@ -9,6 +9,11 @@ import '../../features/auth/presentation/screens/password_reset_screen.dart';
 import '../../features/auth/presentation/screens/sign_in_screen.dart';
 import '../../features/auth/presentation/screens/sign_up_screen.dart';
 import '../../features/auth/presentation/screens/welcome_screen.dart';
+import '../../features/receipt/presentation/bloc/sync_bloc.dart';
+import '../../features/receipt/presentation/bloc/sync_event.dart';
+import '../../features/receipt/presentation/bloc/trash_cubit.dart';
+import '../../features/search/presentation/bloc/search_bloc.dart';
+import '../di/injection.dart';
 import '../security/app_lock_cubit.dart';
 import '../security/app_lock_state.dart';
 import '../security/lock_screen.dart';
@@ -57,18 +62,35 @@ class _AuthGateState extends State<AuthGate> {
           );
         }
 
-        // Authenticated: show main app + optional lock overlay
+        // Authenticated: provide user-dependent BLoCs, then show main app
         if (authState is AuthAuthenticated) {
-          return BlocBuilder<AppLockCubit, AppLockState>(
-            builder: (context, lockState) {
-              return Stack(
-                children: [
-                  const AppShell(),
-                  if (lockState.isEnabled && lockState.isLocked)
-                    const Positioned.fill(child: LockScreen()),
-                ],
-              );
-            },
+          final userId = authState.user.userId;
+
+          return MultiBlocProvider(
+            providers: [
+              BlocProvider(
+                create: (_) => getIt<SearchBloc>(param1: userId),
+              ),
+              BlocProvider(
+                create: (_) => getIt<TrashCubit>(param1: userId),
+              ),
+              BlocProvider(
+                create: (_) =>
+                    getIt<SyncBloc>(param1: userId)
+                      ..add(const SyncRequested()),
+              ),
+            ],
+            child: BlocBuilder<AppLockCubit, AppLockState>(
+              builder: (context, lockState) {
+                return Stack(
+                  children: [
+                    const AppShell(),
+                    if (lockState.isEnabled && lockState.isLocked)
+                      const Positioned.fill(child: LockScreen()),
+                  ],
+                );
+              },
+            ),
           );
         }
 

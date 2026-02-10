@@ -10,23 +10,19 @@ import 'core/security/app_lock_cubit.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/receipt/presentation/bloc/vault_bloc.dart';
-import 'features/search/presentation/bloc/search_bloc.dart';
 import 'features/warranty/presentation/bloc/expiring_bloc.dart';
 
 /// The root widget for the Warranty Vault application.
 ///
 /// Provides [AuthBloc], [AppLockCubit], [LocaleCubit], [VaultBloc],
-/// [ExpiringBloc], and [SearchBloc] at the top of the widget tree and
-/// configures theming, localization delegates, and top-level navigation
-/// via [AuthGate].
+/// and [ExpiringBloc] at the top of the widget tree. User-dependent
+/// BLoCs ([SearchBloc], [SyncBloc], [TrashCubit]) are provided in
+/// [AuthGate] after authentication succeeds.
 class WarrantyVaultApp extends StatelessWidget {
   const WarrantyVaultApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // TODO: Replace hardcoded userId with actual authenticated user ID.
-    const userId = 'local-user';
-
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (_) => LocaleCubit()),
@@ -36,9 +32,6 @@ class WarrantyVaultApp extends StatelessWidget {
         ),
         BlocProvider(create: (_) => getIt<VaultBloc>()),
         BlocProvider(create: (_) => getIt<ExpiringBloc>()),
-        BlocProvider(
-          create: (_) => getIt<SearchBloc>(param1: userId),
-        ),
       ],
       child: BlocBuilder<LocaleCubit, LocaleState>(
         builder: (context, state) {

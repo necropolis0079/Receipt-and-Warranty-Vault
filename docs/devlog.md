@@ -445,3 +445,82 @@ infra/
 - Stack NOT deployed — requires user confirmation (real AWS costs)
 
 ---
+
+## 2026-02-10 — Sprint 9-10: Sync Engine + Cloud Integration
+
+### Session: Connect Flutter to AWS Backend
+
+**What was done:**
+
+#### Step 1: pubspec.yaml updates
+- Added missing packages: `dio`, `connectivity_plus`, `internet_connection_checker_plus`, `workmanager`
+
+#### Step 2: Network Foundation (8 files)
+- `core/network/api_config.dart` — API base URL, timeouts, endpoint constants
+- `core/network/api_client.dart` — Dio-based HTTP client with interceptor chain
+- `core/network/api_exceptions.dart` — Typed exception hierarchy (Offline, AuthExpired, Conflict, NotFound, Validation, Server)
+- `core/network/interceptors/auth_interceptor.dart` — Cognito JWT Bearer token injection + 401 refresh
+- `core/network/interceptors/connectivity_interceptor.dart` — Pre-flight offline check
+- `core/network/interceptors/retry_interceptor.dart` — Exponential backoff for idempotent methods on 5xx
+- `core/network/interceptors/logging_interceptor.dart` — Debug-mode request/response logging
+- `core/services/connectivity_service.dart` — Two-layer detection (connectivity_plus + DNS probe)
+
+#### Step 3: Remote Data Sources (4 files)
+- `features/receipt/data/datasources/receipt_remote_source.dart` — Receipt CRUD + LLM refinement trigger
+- `features/receipt/data/datasources/sync_remote_source.dart` — Delta pull, batch push, full reconciliation
+- `features/receipt/data/datasources/image_remote_source.dart` — S3 presigned URL workflow
+- `features/settings/data/datasources/settings_remote_source.dart` — Categories, profile, settings, export
+
+#### Step 4: Sync Engine (4 files)
+- `core/sync/sync_config.dart` — Tuneable constants (15min delta, 7-day full reconciliation, batch size 20)
+- `core/sync/conflict_resolver.dart` — 3-tier field-level merge (Server/LLM wins, Client/User wins, Conditional)
+- `core/sync/sync_service.dart` — Orchestrator: deltaPull, batchPush, fullReconciliation
+- `core/sync/image_sync_service.dart` — S3 upload/download via presigned URLs
+
+#### Step 5: Auth + Config (2 files)
+- `features/auth/data/repositories/amplify_auth_repository.dart` — Full production implementation (12 methods)
+- `core/config/amplify_config.dart` — Manual Amplify configuration for CDK-deployed Cognito
+
+#### Step 6: SyncBloc + Integration (4 files)
+- `features/receipt/presentation/bloc/sync_bloc.dart` — Sync state management
+- `features/receipt/presentation/bloc/sync_event.dart` + `sync_state.dart` — Event/state definitions
+- `features/receipt/data/repositories/sync_aware_receipt_repository.dart` — Wraps LocalReceiptRepository + SyncService
+
+#### Step 7: DI + Wiring
+- `core/di/injection.dart` — Registered all new services, data sources, and factory-param BLoCs
+- `core/router/auth_gate.dart` — User-dependent BLoC creation via GetIt (SearchBloc, TrashCubit, SyncBloc)
+- `app.dart` — Removed hardcoded userId, moved SearchBloc to AuthGate
+- `main.dart` — Added configureAmplify() + initializeBackgroundSync()
+
+#### Step 8: CDK Stack Deployed
+- CDK stack deployed to eu-west-1 via `cdk deploy`
+- Real outputs captured and wired into config:
+  - UserPoolId: `eu-west-1_8vZ07CiUc`
+  - AppClientId: `3mlh4a83p6c9c3e1bcftf3obbd`
+  - ApiUrl: `https://q1e4rkyf7e.execute-api.eu-west-1.amazonaws.com/prod/`
+  - CloudFrontDomain: `d2q7chjw0pm3p3.cloudfront.net`
+
+#### Step 9: Tests (82 new tests)
+- `test/core/sync/conflict_resolver_test.dart` — 45 tests (all 3 tiers, version merge, field union, null fallbacks)
+- `test/features/receipt/presentation/bloc/sync_bloc_test.dart` — 10 tests (all events, online/offline, auto-sync)
+- `test/core/network/api_exceptions_test.dart` — 19 tests (exception hierarchy)
+- `test/core/network/connectivity_interceptor_test.dart` — 3 tests (online/offline/limited)
+- `test/core/network/retry_interceptor_test.dart` — 5 tests (retry logic, max retries, non-idempotent skip)
+
+### Bugs Fixed During Sprint
+| Bug | Fix | File |
+|-----|-----|------|
+| Cognito exceptions not found in `amplify_flutter` | Import from `amplify_auth_cognito` with alias | amplify_auth_repository.dart |
+| `NotAuthorizedException` class name wrong | Use `NotAuthorizedServiceException` | amplify_auth_repository.dart |
+| `CodeExpiredException` class name wrong | Use `ExpiredCodeException` | amplify_auth_repository.dart |
+| `sealed class SyncEvent` can't be extended outside library | Changed to `abstract class` | sync_event.dart |
+| `.catchError` on `Future<SyncStats>` requires return type | Use `.then((_) {}, onError: ...)` pattern | sync_aware_receipt_repository.dart |
+| auth_gate_test: GetIt not registered for user-dependent BLoCs | Register factoryParams for SearchBloc, TrashCubit, SyncBloc in setUp | auth_gate_test.dart |
+
+### Final Status
+- `flutter analyze`: 0 issues
+- `flutter test`: 416 passed, 0 failed (+82 new tests)
+- CDK stack: DEPLOYED and outputs wired into Flutter config
+- All new code compiles, tests pass, ready for end-to-end testing
+
+---

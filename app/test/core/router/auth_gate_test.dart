@@ -3,15 +3,21 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:warrantyvault/core/database/daos/sync_queue_dao.dart';
+import 'package:warrantyvault/core/di/injection.dart';
 import 'package:warrantyvault/core/router/auth_gate.dart';
 import 'package:warrantyvault/core/security/app_lock_cubit.dart';
 import 'package:warrantyvault/core/security/app_lock_service.dart';
+import 'package:warrantyvault/core/services/connectivity_service.dart';
+import 'package:warrantyvault/core/sync/sync_service.dart';
 import 'package:warrantyvault/features/auth/domain/entities/auth_result.dart';
 import 'package:warrantyvault/features/auth/domain/entities/auth_user.dart';
 import 'package:warrantyvault/features/auth/domain/repositories/auth_repository.dart';
 import 'package:warrantyvault/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:warrantyvault/features/auth/presentation/bloc/auth_state.dart';
 import 'package:warrantyvault/features/receipt/domain/repositories/receipt_repository.dart';
+import 'package:warrantyvault/features/receipt/presentation/bloc/sync_bloc.dart';
+import 'package:warrantyvault/features/receipt/presentation/bloc/trash_cubit.dart';
 import 'package:warrantyvault/features/receipt/presentation/bloc/vault_bloc.dart';
 import 'package:warrantyvault/features/search/presentation/bloc/search_bloc.dart';
 import 'package:warrantyvault/features/warranty/presentation/bloc/expiring_bloc.dart';
@@ -22,10 +28,19 @@ class MockAppLockService extends Mock implements AppLockService {}
 
 class MockReceiptRepository extends Mock implements ReceiptRepository {}
 
+class MockSyncService extends Mock implements SyncService {}
+
+class MockConnectivityService extends Mock implements ConnectivityService {}
+
+class MockSyncQueueDao extends Mock implements SyncQueueDao {}
+
 void main() {
   late MockAuthRepository mockRepo;
   late MockAppLockService mockLockService;
   late MockReceiptRepository mockReceiptRepo;
+  late MockSyncService mockSyncService;
+  late MockConnectivityService mockConnectivityService;
+  late MockSyncQueueDao mockSyncQueueDao;
   late AuthBloc authBloc;
   late AppLockCubit lockCubit;
   late VaultBloc vaultBloc;
@@ -52,10 +67,13 @@ void main() {
     await tester.pump();
   }
 
-  setUp(() {
+  setUp(() async {
     mockRepo = MockAuthRepository();
     mockLockService = MockAppLockService();
     mockReceiptRepo = MockReceiptRepository();
+    mockSyncService = MockSyncService();
+    mockConnectivityService = MockConnectivityService();
+    mockSyncQueueDao = MockSyncQueueDao();
 
     when(() => mockLockService.isDeviceSupported())
         .thenAnswer((_) async => false);
@@ -72,6 +90,38 @@ void main() {
     when(() => mockReceiptRepo.search(any(), any()))
         .thenAnswer((_) async => []);
 
+    // Stubs for SyncBloc dependencies (subscribed in constructor).
+    when(() => mockConnectivityService.stateStream)
+        .thenAnswer((_) => const Stream<ConnectivityState>.empty());
+    when(() => mockConnectivityService.currentState)
+        .thenReturn(ConnectivityState.online);
+    when(() => mockSyncQueueDao.watchPendingCount())
+        .thenAnswer((_) => Stream<int>.value(0));
+
+    // Register user-dependent BLoC factories in GetIt
+    // (AuthGate resolves these via getIt<T>(param1: userId) when authenticated).
+    await getIt.reset();
+    getIt.registerFactoryParam<SearchBloc, String, void>(
+      (userId, _) => SearchBloc(
+        receiptRepository: mockReceiptRepo,
+        userId: userId,
+      ),
+    );
+    getIt.registerFactoryParam<TrashCubit, String, void>(
+      (userId, _) => TrashCubit(
+        receiptRepository: mockReceiptRepo,
+        userId: userId,
+      ),
+    );
+    getIt.registerFactoryParam<SyncBloc, String, void>(
+      (userId, _) => SyncBloc(
+        syncService: mockSyncService,
+        connectivityService: mockConnectivityService,
+        syncQueueDao: mockSyncQueueDao,
+        userId: userId,
+      ),
+    );
+
     authBloc = AuthBloc(authRepository: mockRepo);
     lockCubit = AppLockCubit(appLockService: mockLockService);
     vaultBloc = VaultBloc(receiptRepository: mockReceiptRepo);
@@ -79,12 +129,13 @@ void main() {
     searchBloc = SearchBloc(receiptRepository: mockReceiptRepo, userId: 'test');
   });
 
-  tearDown(() {
+  tearDown(() async {
     authBloc.close();
     lockCubit.close();
     vaultBloc.close();
     expiringBloc.close();
     searchBloc.close();
+    await getIt.reset();
   });
 
   Widget buildApp() {

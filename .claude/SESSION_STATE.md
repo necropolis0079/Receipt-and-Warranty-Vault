@@ -4,78 +4,77 @@
 > **After compaction, read this FIRST to restore context.**
 
 ## Last Updated
-- **Timestamp**: 2026-02-09
-- **Phase**: Sprint 7-8 — AWS Infrastructure (CDK) COMPLETE
+- **Timestamp**: 2026-02-10
+- **Phase**: Sprint 9-10 — Sync Engine + Cloud Integration IN PROGRESS
 
 ## Current Status
 - Flutter project at `app/` with clean architecture (core + 5 feature modules)
-- AWS CDK project at `infra/` with single `ReceiptVaultStack` provisioning all 12 AWS services
-- 22 Flutter dependencies in pubspec.yaml
-- 2 CDK dependencies: aws-cdk-lib>=2.170.0, constructs>=10.0.0
-- GitHub Actions CI pipeline (.github/workflows/ci.yml)
-- All Sprints 1-8 features implemented and tested/reviewed
+- AWS CDK project at `infra/` with single `ReceiptVaultStack` — DEPLOYED to eu-west-1
+- CDK outputs captured and wired into app config
+- All Sprint 1-10 code written, analyze clean, 334 tests passing
+
+### CDK Deployment Outputs (LIVE)
+| Output | Value |
+|--------|-------|
+| ApiUrl | `https://q1e4rkyf7e.execute-api.eu-west-1.amazonaws.com/prod/` |
+| UserPoolId | `eu-west-1_8vZ07CiUc` |
+| AppClientId | `3mlh4a83p6c9c3e1bcftf3obbd` |
+| DynamoTableName | `ReceiptVault` |
+| ImageBucketName | `receiptvault-images-prod-eu-west-1` |
+| ExportBucketName | `receiptvault-exports-prod-eu-west-1` |
+| CloudFrontDomain | `d2q7chjw0pm3p3.cloudfront.net` |
 
 ### Completed Features (Sprint 1-2)
-- **Theme + design system**: AppColors, AppSpacing, AppRadius, AppShadows, AppTypography, AppTheme — 43 tests
-- **Drift DB schema + SQLCipher**: 4 tables, 4 DAOs, FTS5, AES-256 encryption
-- **Localization (EN + EL)**: ~175 keys in both ARB files, LocaleCubit — 19 tests
-- **UI shell (5-tab navigation)**: AppShell + BottomNavigationBar + IndexedStack + 5 screens — 8 tests
-- **Auth feature (F-010)**: Domain (entities + repository interface + mock), BLoC (11 events, 8 states), 7 screens, 3 widgets — 25 BLoC + 22 screen tests
-- **App Lock (F-011)**: AppLockService, AppLockCubit, LockScreen, AppLifecycleObserver — 20 tests
-- **DI**: Manual get_it (injection.dart)
-- **AuthGate**: Declarative BlocConsumer router with lock screen overlay — 8 integration tests
-- **Integration**: app.dart wired with MultiBlocProvider, main.dart with async DI init
+- Theme + design system, Drift DB schema + SQLCipher, Localization (EN + EL), UI shell (5-tab navigation)
+- Auth feature (F-010): Domain + BLoC + 7 screens + 3 widgets
+- App Lock (F-011): AppLockService, AppLockCubit, LockScreen
+- DI: Manual get_it (injection.dart), AuthGate: Declarative BlocConsumer router
 
 ### Completed Features (Sprint 3-4 — Core Capture)
-- **Domain entities**: Receipt, OcrResult, ImageData, ReceiptResult
-- **Service interfaces**: ImagePipelineService, OcrService (with mock + hybrid implementations)
-- **Data layer**: ReceiptRepository interface, LocalReceiptRepository, ReceiptMapper
-- **State management**: AddReceiptBloc, VaultBloc, ExpiringBloc, CategoryManagementCubit
-- **UI widgets**: ReceiptCard, WarrantyBadge, CaptureOptionSheet, OcrProgressIndicator, ReceiptFieldEditors, ImagePreviewStrip
-- **Screens**: AddReceiptScreen, VaultScreen, ExpiringScreen, ReceiptDetailScreen, ImagePreviewScreen, CategoryManagementScreen
-- **Integration**: DI updated, AppShell capture flow, app-level BLoC providers, Settings -> Manage Categories, 10 new l10n keys
+- Domain entities, Service interfaces, Data layer, State management
+- UI widgets + Screens for receipt capture and viewing
 
 ### Completed Features (Sprint 5-6 — Search, Notifications, Export & Polish)
-- **Notification service**: NotificationService interface, LocalNotificationService, MockNotificationService, ReminderScheduler
-- **Search BLoC + UI**: SearchBloc (debounced 300ms), SearchFilters, SearchScreen, SearchFilterBar, SearchResultList
-- **Export/Share**: ExportService interface, DeviceExportService, MockExportService
-- **Trash/Recovery**: TrashCubit, TrashScreen
-- **Notification wiring**: AddReceiptBloc + ExpiringBloc schedule reminders
-- **Integration**: DI updated, Settings wired to Trash + Category Management, ~20 new l10n keys
+- Notification service, Search BLoC + UI, Export/Share, Trash/Recovery
 
 ### Completed Features (Sprint 7-8 — AWS Infrastructure CDK)
-- **CDK project**: `infra/` directory with app.py, cdk.json, requirements.txt
-- **Shared Lambda layer**: 4 modules (response.py, dynamodb.py, auth.py, errors.py)
-- **10 Lambda handlers**: receipt_crud, ocr_refine, sync_handler, thumbnail_generator, warranty_checker, weekly_summary, user_deletion, export_handler, category_handler, presigned_url_generator
-- **CDK stack** (~1042 lines): DynamoDB (6 GSIs), KMS CMK, 3 S3 buckets, Cognito (User Pool + App Client), Lambda Layer, 10 Lambda functions, API Gateway (20 endpoints), CloudFront (OAC), 3 SNS topics, 2 EventBridge rules, 5 CloudWatch alarms, mandatory tags, 6 CfnOutputs
-- **5 bug categories fixed**: error() arg order, GSI case mismatch, GSI-1 SK reference, missing GSI-4 PK write, SNS env var mismatch
-- **21 files created** in `infra/` directory
+- CDK stack (~1042 lines): DynamoDB, KMS, S3, Cognito, Lambda, API Gateway, CloudFront, SNS, EventBridge, CloudWatch
+- 10 Lambda handlers, Shared Lambda layer
 
-### Test Suite: 334 PASSED, 0 FAILED (Flutter)
+### Sprint 9-10 — Sync Engine + Cloud Integration (IN PROGRESS)
+**Completed:**
+1. pubspec.yaml updated with missing packages (dio, connectivity_plus, internet_connection_checker_plus, workmanager)
+2. Network foundation: ApiConfig, ApiClient (Dio), ApiExceptions, 4 interceptors (auth, connectivity, retry, logging)
+3. Remote data sources: ReceiptRemoteSource, SyncRemoteSource, ImageRemoteSource, SettingsRemoteSource
+4. Sync engine: SyncConfig, ConflictResolver (3-tier), SyncService (pull/push/reconciliation), ImageSyncService
+5. AmplifyAuthRepository (full production impl with correct Cognito exception imports), AmplifyConfig
+6. SyncBloc, SyncAwareReceiptRepository, DI wiring (injection.dart), integration (auth_gate.dart, app.dart, main.dart)
+7. All analyze errors fixed: Cognito exceptions from `amplify_auth_cognito`, sealed→abstract for SyncEvent, catchError pattern, auth_gate_test GetIt registration
+8. amplify_config.dart + api_config.dart updated with real CDK outputs
+
+**Key fixes applied during Sprint 9-10:**
+- `amplify_auth_repository.dart`: Cognito-specific exceptions must be imported from `amplify_auth_cognito` (not `amplify_flutter`). Class names: `NotAuthorizedServiceException` (not NotAuthorizedException), `ExpiredCodeException` (not CodeExpiredException)
+- `sync_event.dart`: Changed `sealed` to `abstract` (private events extend from different file)
+- `sync_aware_receipt_repository.dart`: `.catchError` on `Future<T>` requires returning T → use `.then((_) {}, onError: ...)` pattern
+- `auth_gate_test.dart`: Register GetIt factoryParams for SearchBloc, TrashCubit, SyncBloc (AuthGate resolves them via getIt)
+
+9. Tests written: 82 new tests (ConflictResolver 45, SyncBloc 10, ApiExceptions 19, ConnectivityInterceptor 3, RetryInterceptor 5)
+10. devlog.md updated with Sprint 9-10 section
+
+**Remaining:**
+- Git commit of all Sprint 9-10 work
+
+### Test Suite: 416 PASSED, 0 FAILED (Flutter)
 - `flutter analyze`: 0 issues
-- `flutter test`: 334 passed
-- CDK: `cdk synth` SUCCESS — 195 CloudFormation resources, 8 outputs, no errors
-
-## What Comes Next
-- Sprint 7-8 CDK is COMPLETE (code written, reviewed, bugs fixed)
-- `cdk synth` PASSED — 195 resources, 8 outputs, template validates clean
-- Pending: Git commit of all infra/ files
-- Next: Sprint 9-10 — Sync Engine + Cloud Integration (connect Flutter app to AWS backend)
-  - Amplify Flutter Gen 2 auth integration (swap MockAuthRepository for AmplifyAuthRepository)
-  - Sync engine implementation (custom delta sync, field-level merge, conflict resolution)
-  - API client layer (Dio + interceptors + presigned URLs)
-  - Full Lambda business logic (replace TODO stubs)
+- `flutter test`: 416 passed (+82 new tests from Sprint 9-10)
 
 ## Key Reminders
 - Read CLAUDE.md for ALL project decisions
 - Read docs/devlog.md for what happened and why
 - AWS profile is `warrantyvault`, account 882868333122, region eu-west-1
-- CDK stack has NOT been deployed — only synthesized/validated
-- Auth strategy: mock-first, swap to AmplifyAuthRepository when Cognito deployed
+- CDK stack IS deployed — outputs captured above
+- Auth: AmplifyAuthRepository is production-ready, uses `amplify_auth_cognito` for Cognito exceptions
 - Capture strategy: mock-first for ImagePipelineService and OcrService
 - Notification strategy: mock-first for NotificationService
 - Export strategy: mock-first for ExportService
-- Lambda handlers are stubs with TODO markers — full logic in Sprint 9-10
-- GSI attribute convention: UPPERCASE (GSI1PK, GSI1SK, etc.) throughout both CDK and handlers
-- GSI-4 sort key is `warrantyExpiryDate` (not GSI4SK) — matches handler queries directly
-- SNS env var is `SNS_TOPIC_ARN` (not SNS_PLATFORM_ARN) — uses TopicArn in publish calls
+- GSI attribute convention: UPPERCASE (GSI1PK, GSI1SK, etc.)

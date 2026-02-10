@@ -56,7 +56,14 @@
       "Bash(flutter gen-l10n:*)",
       "Bash(dart run build_runner build:*)",
       "Bash(flutter test:*)",
-      "Bash(Select-String \"\\\\[E\\\\]\")"
+      "Bash(Select-String \"\\\\[E\\\\]\")",
+      "Bash(npx cdk:*)",
+      "Bash(dart analyze:*)",
+      "Bash(dart run:*)",
+      "Bash(Select-String -Pattern \"\\\\+\\\\d+ -1:\" -Context 0,0)",
+      "Bash(Select-Object -First 5)",
+      "Bash(AWS_PROFILE=warrantyvault aws cloudformation:*)",
+      "Bash(if not exist \"D:\\\\Receipt and Warranty Vault\\\\app\\\\test\\\\features\\\\receipt\\\\presentation\\\\bloc\" mkdir \"D:\\\\Receipt and Warranty Vault\\\\app\\\\test\\\\features\\\\receipt\\\\presentation\\\\bloc\")"
     ]
   },
   "hooks": {

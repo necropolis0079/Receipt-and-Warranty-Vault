@@ -48,6 +48,13 @@ dependencies:
   # Auth (biometric/PIN lock)
   local_auth: ^2.3.0
 
+  # Auth (Cognito via Amplify)
+  amplify_flutter: ^2.6.0
+  amplify_auth_cognito: ^2.6.0
+
+  # Background tasks
+  workmanager: ^0.5.2
+
   # Image Capture & Processing
   image_picker: ^1.1.2
   image_cropper: ^8.0.0

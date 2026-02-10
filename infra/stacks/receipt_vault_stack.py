@@ -377,7 +377,6 @@ class ReceiptVaultStack(Stack):
             },
             layers=[shared_layer],
             description="Daily check for expiring warranties and send notifications",
-            reserved_concurrent_executions=1,
             log_retention=logs.RetentionDays.ONE_MONTH,
         )
 
@@ -398,7 +397,6 @@ class ReceiptVaultStack(Stack):
             },
             layers=[shared_layer],
             description="Weekly summary digest of warranties and receipts",
-            reserved_concurrent_executions=1,
             log_retention=logs.RetentionDays.ONE_MONTH,
         )
 
@@ -443,7 +441,6 @@ class ReceiptVaultStack(Stack):
             },
             layers=[shared_layer],
             description="Batch export receipts to ZIP with images",
-            reserved_concurrent_executions=2,
             log_retention=logs.RetentionDays.ONE_MONTH,
         )
 
