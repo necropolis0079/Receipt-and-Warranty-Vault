@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_body"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_background"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="12dp">
+
+    <!-- App Title -->
+    <TextView
+        android:id="@+id/widget_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Warranty Vault"
+        android:textColor="#2D5A3D"
+        android:textSize="14sp"
+        android:textStyle="bold" />
+
+    <!-- Stats Text -->
+    <TextView
+        android:id="@+id/widget_stats_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="0 receipts · 0 active warranties"
+        android:textColor="#374151"
+        android:textSize="12sp" />
+
+    <!-- Camera Capture Button -->
+    <ImageView
+        android:id="@+id/widget_capture_button"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/widget_button_background"
+        android:contentDescription="Quick Capture"
+        android:padding="10dp"
+        android:src="@drawable/ic_widget_camera" />
+
+</LinearLayout>

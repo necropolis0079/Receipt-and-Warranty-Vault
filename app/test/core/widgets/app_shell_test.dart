@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:warrantyvault/core/l10n/locale_cubit.dart';
 import 'package:warrantyvault/core/security/app_lock_cubit.dart';
 import 'package:warrantyvault/core/security/app_lock_service.dart';
+import 'package:warrantyvault/core/services/home_widget_service.dart';
 import 'package:warrantyvault/core/theme/theme_cubit.dart';
 import 'package:warrantyvault/core/widgets/app_shell.dart';
 import 'package:warrantyvault/features/auth/domain/repositories/auth_repository.dart';
@@ -21,6 +23,8 @@ class MockAppLockService extends Mock implements AppLockService {}
 
 class MockReceiptRepository extends Mock implements ReceiptRepository {}
 
+class MockHomeWidgetService extends Mock implements HomeWidgetService {}
+
 void main() {
   late AuthBloc authBloc;
   late AppLockCubit lockCubit;
@@ -34,6 +38,18 @@ void main() {
     final mockRepo = MockAuthRepository();
     final mockLockService = MockAppLockService();
     final mockReceiptRepo = MockReceiptRepository();
+
+    // Register HomeWidgetService in GetIt for AppShell.
+    final getIt = GetIt.instance;
+    if (!getIt.isRegistered<HomeWidgetService>()) {
+      final mockHomeWidget = MockHomeWidgetService();
+      when(() => mockHomeWidget.consumePendingUri()).thenReturn(null);
+      when(() => mockHomeWidget.widgetClickStream)
+          .thenAnswer((_) => const Stream.empty());
+      when(() => mockHomeWidget.updateStats(any()))
+          .thenAnswer((_) async {});
+      getIt.registerSingleton<HomeWidgetService>(mockHomeWidget);
+    }
 
     when(() => mockLockService.isDeviceSupported())
         .thenAnswer((_) async => false);
@@ -56,7 +72,7 @@ void main() {
     themeCubit = ThemeCubit();
   });
 
-  tearDown(() {
+  tearDown(() async {
     authBloc.close();
     lockCubit.close();
     vaultBloc.close();
@@ -64,6 +80,7 @@ void main() {
     searchBloc.close();
     localeCubit.close();
     themeCubit.close();
+    await GetIt.instance.reset();
   });
 
   Widget buildApp() {

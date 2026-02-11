@@ -10,6 +10,7 @@ import 'package:warrantyvault/core/l10n/locale_cubit.dart';
 import 'package:warrantyvault/core/router/auth_gate.dart';
 import 'package:warrantyvault/core/security/app_lock_cubit.dart';
 import 'package:warrantyvault/core/security/app_lock_service.dart';
+import 'package:warrantyvault/core/services/home_widget_service.dart';
 import 'package:warrantyvault/core/theme/theme_cubit.dart';
 import 'package:warrantyvault/features/auth/domain/entities/auth_result.dart';
 import 'package:warrantyvault/features/auth/domain/entities/auth_user.dart';
@@ -27,6 +28,8 @@ class MockAuthRepository extends Mock implements AuthRepository {}
 class MockAppLockService extends Mock implements AppLockService {}
 
 class MockReceiptRepository extends Mock implements ReceiptRepository {}
+
+class MockHomeWidgetService extends Mock implements HomeWidgetService {}
 
 void main() {
   late MockAuthRepository mockRepo;
@@ -102,6 +105,14 @@ void main() {
         userId: userId,
       ),
     );
+
+    final mockHomeWidget = MockHomeWidgetService();
+    when(() => mockHomeWidget.consumePendingUri()).thenReturn(null);
+    when(() => mockHomeWidget.widgetClickStream)
+        .thenAnswer((_) => const Stream.empty());
+    when(() => mockHomeWidget.updateStats(any()))
+        .thenAnswer((_) async {});
+    getIt.registerSingleton<HomeWidgetService>(mockHomeWidget);
 
     authBloc = AuthBloc(authRepository: mockRepo);
     lockCubit = AppLockCubit(appLockService: mockLockService);

@@ -524,3 +524,74 @@ infra/
 - All new code compiles, tests pass, ready for end-to-end testing
 
 ---
+
+## 2026-02-11 — Feature #15: Home Screen Widget (Quick Capture)
+
+### What Was Built
+
+**Flutter Service Layer (2 files):**
+- `core/services/home_widget_service.dart` — Injectable service wrapping `home_widget` package:
+  - `initialize()` — sets iOS App Group ID
+  - `updateStats(statsText)` — saves pre-formatted stats to shared preferences + triggers native widget refresh
+  - `checkAndStoreInitialLaunch()` — checks if app was cold-launched from widget, stores URI
+  - `consumePendingUri()` — returns stored URI once then clears it
+  - `widgetClickStream` — forwards `HomeWidget.widgetClicked` stream for warm-start taps
+- `core/services/widget_click_handler.dart` — Static `handle(Uri, BuildContext)` method:
+  - Parses `warrantyvault://capture?source=camera|gallery|files`
+  - Maps source param to `CaptureOption` enum (reuses existing from `capture_option_sheet.dart`)
+  - Pushes `AddReceiptScreen(initialOption: ...)` directly (bypasses CaptureOptionSheet)
+  - Unknown/missing source defaults to camera; wrong host (not `capture`) is a no-op
+
+**Android Native (6 files):**
+- `WarrantyVaultWidgetProvider.kt` — `AppWidgetProvider` subclass reading stats from `SharedPreferences("HomeWidgetPreferences")`, sets `PendingIntent` on capture button → URI `warrantyvault://capture?source=camera`
+- `widget_warranty_vault.xml` — Layout: title (14sp, bold, #2D5A3D), stats text (12sp, #374151), 44dp camera button
+- `widget_background.xml` — Rounded rectangle (#FAF7F2 fill, 16dp corners, #E5E7EB border)
+- `widget_button_background.xml` — Oval shape, solid #2D5A3D fill
+- `ic_widget_camera.xml` — Material camera_alt vector drawable, white fill
+- `widget_warranty_vault_info.xml` — `<appwidget-provider>`: 180dp × 110dp min, 3×2 cells, 24h fallback update
+
+**iOS Placeholder (1 file):**
+- `WarrantyVaultWidget.swift` — WidgetKit `TimelineProvider` + SwiftUI view, `.systemSmall`/`.systemMedium` families, reads from `UserDefaults(suiteName: "group.io.cronos.warrantyvault")`, `Link` with `warrantyvault://capture?source=camera` URL. Requires Xcode project integration on Mac.
+
+**Tests (2 files):**
+- `home_widget_service_test.dart` — Tests `consumePendingUri()` null behavior, `widgetClickStream` accessor
+- `widget_click_handler_test.dart` — 6 tests using `NavigatorObserver` pattern: camera/gallery/files source pushes route, unknown/missing defaults to camera, wrong host doesn't push
+
+### Files Modified (6 + 3 test files)
+1. `pubspec.yaml` — Added `home_widget: ^0.7.0`
+2. `core/di/injection.dart` — Registered `HomeWidgetService` as lazySingleton
+3. `main.dart` — Added `HomeWidgetService.initialize()` + `checkAndStoreInitialLaunch()` after DI setup
+4. `core/widgets/app_shell.dart` — Major changes:
+   - Added `BlocListener<VaultBloc, VaultState>` for reactive stats updates
+   - Computes `warrantyCount` from `receipts.where((r) => r.isWarrantyActive).length`
+   - Formats stats text using l10n: `"${l10n.receiptsCount(N)} · ${l10n.activeWarrantiesCount(M)}"`
+   - Calls `HomeWidgetService.updateStats()` on every vault state change
+   - Consumes pending URI in `initState()` via `addPostFrameCallback`
+   - Subscribes to `widgetClickStream` for warm-start taps
+5. `AndroidManifest.xml` — Added deep link `<intent-filter>` (scheme: `warrantyvault`) + widget `<receiver>` with provider meta-data
+6. `ios/Runner/Info.plist` — Added `CFBundleURLTypes` with `warrantyvault` URL scheme
+7. `test/core/widgets/app_shell_test.dart` — Added `MockHomeWidgetService` registration in GetIt
+8. `test/core/router/auth_gate_test.dart` — Added `MockHomeWidgetService` registration in GetIt
+9. `test/widget_test.dart` — Added `MockHomeWidgetService` registration in GetIt
+
+### Key Data Flows
+- **Stats update**: `VaultBloc → BlocListener in AppShell → HomeWidgetService.updateStats() → native SharedPreferences → widget onUpdate()`
+- **Cold start tap**: Widget PendingIntent → MainActivity with URI → `checkAndStoreInitialLaunch()` stores URI → AppShell.initState → `consumePendingUri()` → `WidgetClickHandler.handle()` → Navigator.push(AddReceiptScreen)
+- **Warm start tap**: `HomeWidget.widgetClicked` stream → AppShell subscription → `WidgetClickHandler.handle()` → Navigator.push(AddReceiptScreen)
+
+### Issues Resolved
+1. **15 test failures after initial implementation**: AppShell now uses `GetIt.I<HomeWidgetService>()` — every test rendering AppShell (directly or via AuthGate) needed a mock registered. Fixed in 3 test files.
+2. **widget_click_handler_test.dart design**: Initial approach tried to render `AddReceiptScreen` (which has deep GetIt dependencies). Redesigned using `NavigatorObserver` to count pushed routes without needing to render destination widget.
+3. **Unused variable warning**: `bool navigated = false` leftover from initial test design. Removed.
+
+### Key Decisions
+- **`home_widget` package as bridge** — Unified Flutter ↔ native API for shared storage, widget refresh, and click detection
+- **Pre-formatted stats text** — Flutter formats the string (with l10n), native widget just displays it. Avoids duplicating formatting logic in Kotlin/Swift.
+- **NavigatorObserver test pattern** — For testing navigation targets that have complex dependencies, count pushes instead of rendering the destination widget
+
+### Final Status
+- `flutter analyze`: **0 issues**
+- `flutter test`: **387 passed, 0 failed**
+- 11 new files created, 9 files modified (6 source + 3 test)
+
+---

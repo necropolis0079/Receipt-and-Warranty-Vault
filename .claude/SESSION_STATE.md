@@ -4,25 +4,14 @@
 > **After compaction, read this FIRST to restore context.**
 
 ## Last Updated
-- **Timestamp**: 2026-02-10
-- **Phase**: Sprint 9-10 — Sync Engine + Cloud Integration IN PROGRESS
+- **Timestamp**: 2026-02-11
+- **Phase**: Feature #15 — Home Screen Widget COMPLETE
 
 ## Current Status
 - Flutter project at `app/` with clean architecture (core + 5 feature modules)
-- AWS CDK project at `infra/` with single `ReceiptVaultStack` — DEPLOYED to eu-west-1
-- CDK outputs captured and wired into app config
-- All Sprint 1-10 code written, analyze clean, 334 tests passing
-
-### CDK Deployment Outputs (LIVE)
-| Output | Value |
-|--------|-------|
-| ApiUrl | `https://q1e4rkyf7e.execute-api.eu-west-1.amazonaws.com/prod/` |
-| UserPoolId | `eu-west-1_8vZ07CiUc` |
-| AppClientId | `3mlh4a83p6c9c3e1bcftf3obbd` |
-| DynamoTableName | `ReceiptVault` |
-| ImageBucketName | `receiptvault-images-prod-eu-west-1` |
-| ExportBucketName | `receiptvault-exports-prod-eu-west-1` |
-| CloudFrontDomain | `d2q7chjw0pm3p3.cloudfront.net` |
+- AWS infrastructure **DESTROYED** (2026-02-11) — app is offline-only
+- Cloud/sync layer removed from codebase (Sprint simplification)
+- All features through #15 implemented, analyze clean, 387 tests passing
 
 ### Completed Features (Sprint 1-2)
 - Theme + design system, Drift DB schema + SQLCipher, Localization (EN + EL), UI shell (5-tab navigation)
@@ -38,43 +27,49 @@
 - Notification service, Search BLoC + UI, Export/Share, Trash/Recovery
 
 ### Completed Features (Sprint 7-8 — AWS Infrastructure CDK)
-- CDK stack (~1042 lines): DynamoDB, KMS, S3, Cognito, Lambda, API Gateway, CloudFront, SNS, EventBridge, CloudWatch
-- 10 Lambda handlers, Shared Lambda layer
+- CDK stack: DynamoDB, KMS, S3, Cognito, Lambda, API Gateway, CloudFront, SNS, EventBridge, CloudWatch
+- **NOTE**: All AWS resources DESTROYED on 2026-02-11
 
-### Sprint 9-10 — Sync Engine + Cloud Integration (IN PROGRESS)
-**Completed:**
-1. pubspec.yaml updated with missing packages (dio, connectivity_plus, internet_connection_checker_plus, workmanager)
-2. Network foundation: ApiConfig, ApiClient (Dio), ApiExceptions, 4 interceptors (auth, connectivity, retry, logging)
-3. Remote data sources: ReceiptRemoteSource, SyncRemoteSource, ImageRemoteSource, SettingsRemoteSource
-4. Sync engine: SyncConfig, ConflictResolver (3-tier), SyncService (pull/push/reconciliation), ImageSyncService
-5. AmplifyAuthRepository (full production impl with correct Cognito exception imports), AmplifyConfig
-6. SyncBloc, SyncAwareReceiptRepository, DI wiring (injection.dart), integration (auth_gate.dart, app.dart, main.dart)
-7. All analyze errors fixed: Cognito exceptions from `amplify_auth_cognito`, sealed→abstract for SyncEvent, catchError pattern, auth_gate_test GetIt registration
-8. amplify_config.dart + api_config.dart updated with real CDK outputs
+### Completed Features (Sprint 9-10 — Sync Engine)
+- Network layer, remote data sources, sync engine, Amplify auth
+- **NOTE**: Cloud/sync code removed on 2026-02-11 (offline-only simplification)
 
-**Key fixes applied during Sprint 9-10:**
-- `amplify_auth_repository.dart`: Cognito-specific exceptions must be imported from `amplify_auth_cognito` (not `amplify_flutter`). Class names: `NotAuthorizedServiceException` (not NotAuthorizedException), `ExpiredCodeException` (not CodeExpiredException)
-- `sync_event.dart`: Changed `sealed` to `abstract` (private events extend from different file)
-- `sync_aware_receipt_repository.dart`: `.catchError` on `Future<T>` requires returning T → use `.then((_) {}, onError: ...)` pattern
-- `auth_gate_test.dart`: Register GetIt factoryParams for SearchBloc, TrashCubit, SyncBloc (AuthGate resolves them via getIt)
+### Completed: Offline-Only Simplification (2026-02-11)
+- Removed all cloud/sync code, reverted to MockAuthRepository
+- Removed dependencies: dio, amplify_flutter, amplify_auth_cognito, workmanager, connectivity_plus, internet_connection_checker_plus
 
-9. Tests written: 82 new tests (ConflictResolver 45, SyncBloc 10, ApiExceptions 19, ConnectivityInterceptor 3, RetryInterceptor 5)
-10. devlog.md updated with Sprint 9-10 section
+### Completed: Real Services + Theme System + Settings
+- Wired real services into DI, added theme system (ThemeCubit), completed settings screen
 
-**Remaining:**
-- Git commit of all Sprint 9-10 work
+### Completed: Bulk Import from Gallery (Feature #14)
+- Scan gallery for receipt-like images, select, and batch-process
 
-### Test Suite: 416 PASSED, 0 FAILED (Flutter)
+### Completed: Home Screen Widget — Feature #15 (2026-02-11)
+- `home_widget: ^0.7.0` package added
+- `HomeWidgetService` — injectable wrapper for home_widget package (initialize, updateStats, consumePendingUri, widgetClickStream)
+- `WidgetClickHandler` — parses `warrantyvault://capture?source=camera|gallery|files` deep links, navigates to AddReceiptScreen
+- Android native widget: Kotlin provider + XML layout + drawables + widget info XML
+- iOS WidgetKit placeholder (requires Xcode on Mac)
+- `AppShell` wired: BlocListener for stats updates, widget click stream subscription, pending URI consumption
+- Deep link intent filters added to AndroidManifest.xml and Info.plist
+- 15 new tests (6 widget_click_handler + 2 home_widget_service + 7 recovered existing)
+- All 387 tests passing, 0 analyze issues
+
+## Test Suite: 387 PASSED, 0 FAILED
 - `flutter analyze`: 0 issues
-- `flutter test`: 416 passed (+82 new tests from Sprint 9-10)
+- `flutter test`: 387 passed
 
 ## Key Reminders
 - Read CLAUDE.md for ALL project decisions
 - Read docs/devlog.md for what happened and why
-- AWS profile is `warrantyvault`, account 882868333122, region eu-west-1
-- CDK stack IS deployed — outputs captured above
-- Auth: AmplifyAuthRepository is production-ready, uses `amplify_auth_cognito` for Cognito exceptions
+- AWS is **DESTROYED** — app is fully offline-only
+- Auth: MockAuthRepository (offline mock) — real auth deferred to v1.5
 - Capture strategy: mock-first for ImagePipelineService and OcrService
 - Notification strategy: mock-first for NotificationService
 - Export strategy: mock-first for ExportService
-- GSI attribute convention: UPPERCASE (GSI1PK, GSI1SK, etc.)
+
+## v1 Feature Priority Remaining
+Features 1-15 are implemented. Remaining from the v1 list:
+16. Stats display on home screen — partially done (widget has stats, home screen TBD)
+17. English + Greek localization — done (104+ keys in both ARBs)
+18. Batch export by date range — export service exists, batch UI TBD

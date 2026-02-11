@@ -5,6 +5,7 @@ import '../database/database_provider.dart';
 import '../notifications/local_notification_service.dart';
 import '../notifications/notification_service.dart';
 import '../notifications/reminder_scheduler.dart';
+import '../services/home_widget_service.dart';
 import '../../features/auth/data/repositories/mock_auth_repository.dart';
 import '../../features/auth/domain/repositories/auth_repository.dart';
 import '../../features/auth/presentation/bloc/auth_bloc.dart';
@@ -53,6 +54,7 @@ Future<void> configureDependencies() async {
     () => LocalNotificationService(),
   );
   getIt.registerLazySingleton<ExportService>(() => DeviceExportService());
+  getIt.registerLazySingleton<HomeWidgetService>(() => HomeWidgetService());
   getIt.registerLazySingleton<GalleryScannerService>(
     () => DeviceGalleryScannerService(),
   );

@@ -1,4 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:get_it/get_it.dart';
+import 'package:warrantyvault/core/services/home_widget_service.dart';
+import 'package:warrantyvault/core/services/widget_click_handler.dart';
+import 'package:warrantyvault/features/receipt/presentation/bloc/vault_bloc.dart';
+import 'package:warrantyvault/features/receipt/presentation/bloc/vault_state.dart';
 import 'package:warrantyvault/features/receipt/presentation/screens/vault_screen.dart';
 import 'package:warrantyvault/features/warranty/presentation/screens/expiring_screen.dart';
 import 'package:warrantyvault/features/receipt/presentation/screens/add_receipt_screen.dart';
@@ -32,6 +41,36 @@ class _AppShellState extends State<AppShell> {
     SettingsScreen(),
   ];
 
+  final HomeWidgetService _homeWidgetService =
+      GetIt.I<HomeWidgetService>();
+  StreamSubscription<Uri?>? _widgetClickSub;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Handle cold-start widget launch (URI stored during main()).
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final pendingUri = _homeWidgetService.consumePendingUri();
+      if (pendingUri != null && mounted) {
+        WidgetClickHandler.handle(pendingUri, context);
+      }
+    });
+
+    // Handle warm-start widget taps.
+    _widgetClickSub = _homeWidgetService.widgetClickStream.listen((uri) {
+      if (uri != null && mounted) {
+        WidgetClickHandler.handle(uri, context);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _widgetClickSub?.cancel();
+    super.dispose();
+  }
+
   void _onTabTapped(int index) {
     if (index == 2) {
       _openAddReceipt();
@@ -53,57 +92,80 @@ class _AppShellState extends State<AppShell> {
     }
   }
 
+  void _onVaultStateChanged(VaultState state) {
+    final l10n = AppLocalizations.of(context);
+    final String statsText;
+
+    if (state is VaultLoaded) {
+      final receiptCount = state.receipts.length;
+      final warrantyCount =
+          state.receipts.where((r) => r.isWarrantyActive).length;
+      statsText =
+          '${l10n.receiptsCount(receiptCount)} · ${l10n.activeWarrantiesCount(warrantyCount)}';
+    } else if (state is VaultEmpty) {
+      statsText =
+          '${l10n.receiptsCount(0)} · ${l10n.activeWarrantiesCount(0)}';
+    } else {
+      return;
+    }
+
+    _homeWidgetService.updateStats(statsText);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _screens,
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: _onTabTapped,
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.white,
-        selectedItemColor: _forestGreen,
-        unselectedItemColor: _unselectedGray,
-        selectedFontSize: 12,
-        unselectedFontSize: 12,
-        items: [
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.receipt_long_outlined),
-            activeIcon: Icon(Icons.receipt_long),
-            label: 'Vault',
-          ),
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.timer_outlined),
-            activeIcon: Icon(Icons.timer),
-            label: 'Expiring',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(
-              Icons.add_circle_outline,
-              size: 32,
-              color: _currentIndex == 2 ? _forestGreen : _unselectedGray,
+    return BlocListener<VaultBloc, VaultState>(
+      listener: (context, state) => _onVaultStateChanged(state),
+      child: Scaffold(
+        body: IndexedStack(
+          index: _currentIndex,
+          children: _screens,
+        ),
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: _currentIndex,
+          onTap: _onTabTapped,
+          type: BottomNavigationBarType.fixed,
+          backgroundColor: Colors.white,
+          selectedItemColor: _forestGreen,
+          unselectedItemColor: _unselectedGray,
+          selectedFontSize: 12,
+          unselectedFontSize: 12,
+          items: [
+            const BottomNavigationBarItem(
+              icon: Icon(Icons.receipt_long_outlined),
+              activeIcon: Icon(Icons.receipt_long),
+              label: 'Vault',
             ),
-            activeIcon: const Icon(
-              Icons.add_circle,
-              size: 32,
-              color: _forestGreen,
+            const BottomNavigationBarItem(
+              icon: Icon(Icons.timer_outlined),
+              activeIcon: Icon(Icons.timer),
+              label: 'Expiring',
             ),
-            label: 'Add',
-          ),
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.search_outlined),
-            activeIcon: Icon(Icons.search),
-            label: 'Search',
-          ),
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.settings_outlined),
-            activeIcon: Icon(Icons.settings),
-            label: 'Settings',
-          ),
-        ],
+            BottomNavigationBarItem(
+              icon: Icon(
+                Icons.add_circle_outline,
+                size: 32,
+                color: _currentIndex == 2 ? _forestGreen : _unselectedGray,
+              ),
+              activeIcon: const Icon(
+                Icons.add_circle,
+                size: 32,
+                color: _forestGreen,
+              ),
+              label: 'Add',
+            ),
+            const BottomNavigationBarItem(
+              icon: Icon(Icons.search_outlined),
+              activeIcon: Icon(Icons.search),
+              label: 'Search',
+            ),
+            const BottomNavigationBarItem(
+              icon: Icon(Icons.settings_outlined),
+              activeIcon: Icon(Icons.settings),
+              label: 'Settings',
+            ),
+          ],
+        ),
       ),
     );
   }
