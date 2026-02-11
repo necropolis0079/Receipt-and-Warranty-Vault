@@ -5,13 +5,13 @@
 
 ## Last Updated
 - **Timestamp**: 2026-02-11
-- **Phase**: Feature #15 — Home Screen Widget COMPLETE
+- **Phase**: ALL 18 v1 FEATURES COMPLETE
 
 ## Current Status
 - Flutter project at `app/` with clean architecture (core + 5 feature modules)
 - AWS infrastructure **DESTROYED** (2026-02-11) — app is offline-only
 - Cloud/sync layer removed from codebase (Sprint simplification)
-- All features through #15 implemented, analyze clean, 387 tests passing
+- All 18 v1 features implemented, analyze clean, 387 tests passing
 
 ### Completed Features (Sprint 1-2)
 - Theme + design system, Drift DB schema + SQLCipher, Localization (EN + EL), UI shell (5-tab navigation)
@@ -46,30 +46,25 @@
 
 ### Completed: Home Screen Widget — Feature #15 (2026-02-11)
 - `home_widget: ^0.7.0` package added
-- `HomeWidgetService` — injectable wrapper for home_widget package (initialize, updateStats, consumePendingUri, widgetClickStream)
-- `WidgetClickHandler` — parses `warrantyvault://capture?source=camera|gallery|files` deep links, navigates to AddReceiptScreen
-- Android native widget: Kotlin provider + XML layout + drawables + widget info XML
-- iOS WidgetKit placeholder (requires Xcode on Mac)
-- `AppShell` wired: BlocListener for stats updates, widget click stream subscription, pending URI consumption
-- Deep link intent filters added to AndroidManifest.xml and Info.plist
-- 15 new tests (6 widget_click_handler + 2 home_widget_service + 7 recovered existing)
-- All 387 tests passing, 0 analyze issues
+- HomeWidgetService, WidgetClickHandler, Android native widget, iOS placeholder
+- Deep link handling, stats sync via BlocListener
+
+### Completed: Features #16, #17, #18 — Final v1 Features (2026-02-11)
+- **#16 Stats display**: Already existed (`_StatsBar` in vault_screen.dart). Fixed VaultBloc `activeCount` bug — was counting `ReceiptStatus.active`, now counts `isWarrantyActive`.
+- **#17 Localization**: Already complete — all 100+ keys present in both EN and EL ARBs. Added 3 new keys for batch export.
+- **#18 Batch export**: Created `BatchExportScreen` with date range picker, receipt filtering, CSV generation via ExportService, file sharing. Added settings tile.
 
 ## Test Suite: 387 PASSED, 0 FAILED
 - `flutter analyze`: 0 issues
 - `flutter test`: 387 passed
+
+## v1 Feature Completion: 18/18 (100%)
+All v1 features are implemented. Next steps would be:
+- Manual testing on physical devices
+- v1.5 features (Cloud LLM refinement, smart search, spending insights, etc.)
 
 ## Key Reminders
 - Read CLAUDE.md for ALL project decisions
 - Read docs/devlog.md for what happened and why
 - AWS is **DESTROYED** — app is fully offline-only
 - Auth: MockAuthRepository (offline mock) — real auth deferred to v1.5
-- Capture strategy: mock-first for ImagePipelineService and OcrService
-- Notification strategy: mock-first for NotificationService
-- Export strategy: mock-first for ExportService
-
-## v1 Feature Priority Remaining
-Features 1-15 are implemented. Remaining from the v1 list:
-16. Stats display on home screen — partially done (widget has stats, home screen TBD)
-17. English + Greek localization — done (104+ keys in both ARBs)
-18. Batch export by date range — export service exists, batch UI TBD

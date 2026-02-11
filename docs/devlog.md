@@ -595,3 +595,49 @@ infra/
 - 11 new files created, 9 files modified (6 source + 3 test)
 
 ---
+
+## 2026-02-11 — Features #16, #17, #18: Final v1 Features
+
+### Overview
+Completed the last three v1 features to reach full v1.0 feature parity.
+
+### Feature #16 — Stats Display on Home Screen
+**Status**: Already implemented — `_StatsBar` widget in `vault_screen.dart` already shows "X receipts · Y active warranties".
+
+**Bug fix**: `VaultBloc.activeCount` was computing `receipts.where((r) => r.status == ReceiptStatus.active).length` (counts receipts with active *status*), but the UI labels it "active warranties". Fixed to use `r.isWarrantyActive` which correctly checks `warrantyMonths > 0`, `warrantyExpiryDate != null`, and expiry is after `DateTime.now()`. This aligns the count with the `AppShell` BlocListener which already used `isWarrantyActive` for widget stats.
+
+### Feature #17 — English + Greek Localization
+**Status**: Already complete — systematic comparison of `app_en.arb` (1042 lines) vs `app_el.arb` (259 lines) confirmed all 100+ keys present in both. The line count difference is entirely from `@key` metadata blocks only in the default locale (EN).
+
+Added 3 new l10n keys needed for Feature #18:
+- `noReceiptsInRange` — "No receipts in the selected date range"
+- `receiptsToExport` — ICU plural: "No receipts to export / 1 receipt to export / {count} receipts to export"
+- `allDates` — "All Dates"
+
+### Feature #18 — Batch Export by Date Range
+**New file**: `features/settings/presentation/screens/batch_export_screen.dart`
+- Date range picker via `showDateRangePicker`
+- Filters receipts from `VaultBloc` by `purchaseDate` within range
+- Shows match count with l10n plural formatting
+- Generates CSV via `ExportService.batchExportCsv()` → writes to `Directory.systemTemp` → shares via `ExportService.shareFile()`
+- Added settings tile in `settings_screen.dart` with file_download icon
+
+### Files Modified
+1. `vault_bloc.dart` — Bug fix: `activeCount` now uses `isWarrantyActive` instead of `ReceiptStatus.active`
+2. `app_en.arb` — Added 3 new l10n keys (noReceiptsInRange, receiptsToExport, allDates)
+3. `app_el.arb` — Added corresponding Greek translations
+4. `settings_screen.dart` — Added "Export by Date Range" tile + import
+
+### Files Created
+1. `batch_export_screen.dart` — Full batch export UI with date range picker
+
+### Test Fixes
+- `vault_bloc_test.dart` — Updated test receipts to include `warrantyMonths` and `warrantyExpiryDate` fields so `isWarrantyActive` returns true. Renamed test "activeCount only counts active receipts" → "activeCount only counts receipts with active warranties".
+- `settings_screen_test.dart` — Sign Out tests used `tester.ensureVisible()` which failed because the new Export tile pushed Sign Out off-screen in the lazy ListView. Fixed by using `tester.scrollUntilVisible()` to scroll to Sign Out before interacting.
+
+### Final Status
+- `flutter analyze`: **0 issues**
+- `flutter test`: **387 passed, 0 failed**
+- **All 18 v1 features are now implemented**
+
+---

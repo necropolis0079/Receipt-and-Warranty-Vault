@@ -87,6 +87,27 @@
 - [ ] Tests: home_widget_service_test.dart — 3 tests pass
 - [ ] Tests: Existing app_shell_test, auth_gate_test, widget_test still pass with mock HomeWidgetService
 
+## Stats Display (Feature #16)
+- [ ] `_StatsBar` in vault_screen.dart shows "X receipts · Y active warranties"
+- [ ] `VaultBloc.activeCount` uses `isWarrantyActive` (not `ReceiptStatus.active`)
+- [ ] Active warranty count reflects receipts with `warrantyMonths > 0`, valid `warrantyExpiryDate`, and expiry in the future
+
+## Localization (Feature #17)
+- [ ] All l10n keys present in both `app_en.arb` and `app_el.arb`
+- [ ] Language toggle in Settings switches between English and Greek
+- [ ] ICU plural strings (e.g. receiptsToExport) render correctly for 0, 1, and many
+
+## Batch Export by Date Range (Feature #18)
+- [ ] "Export by Date Range" tile appears in Settings screen
+- [ ] Tapping tile navigates to BatchExportScreen
+- [ ] Date range picker opens and allows date selection
+- [ ] Clearing date range shows all receipts
+- [ ] Receipt count label updates when date range changes
+- [ ] Empty state shown when no receipts match selected range
+- [ ] Export button disabled when no matching receipts
+- [ ] Export generates CSV file and triggers share sheet
+- [ ] Settings screen Sign Out tile still accessible (scroll works)
+
 ---
 
 *Last updated: 2026-02-11*

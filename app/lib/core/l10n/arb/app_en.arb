@@ -1037,5 +1037,24 @@
   "receiptShared": "Receipt shared",
   "@receiptShared": {
     "description": "Snackbar message when a receipt is shared"
+  },
+
+  "noReceiptsInRange": "No receipts in the selected date range",
+  "@noReceiptsInRange": {
+    "description": "Empty state when no receipts match the selected date range for export"
+  },
+  "receiptsToExport": "{count, plural, =0{No receipts to export} =1{1 receipt to export} other{{count} receipts to export}}",
+  "@receiptsToExport": {
+    "description": "Count of receipts matching the date range for export",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "12"
+      }
+    }
+  },
+  "allDates": "All Dates",
+  "@allDates": {
+    "description": "Label when no date range filter is applied"
   }
 }

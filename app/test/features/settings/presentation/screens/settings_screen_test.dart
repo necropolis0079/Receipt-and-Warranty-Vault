@@ -173,6 +173,12 @@ void main() {
 
     testWidgets('renders Sign Out tile in red', (tester) async {
       await pumpApp(tester);
+      await tester.scrollUntilVisible(
+        find.text('Sign Out'),
+        200,
+        scrollable: find.byType(Scrollable),
+      );
+      await tester.pumpAndSettle();
       final signOutFinder = find.text('Sign Out');
       expect(signOutFinder, findsOneWidget);
       final textWidget = tester.widget<Text>(signOutFinder);
@@ -290,7 +296,11 @@ void main() {
     testWidgets('tapping Sign Out shows confirmation dialog', (tester) async {
       await pumpApp(tester);
 
-      await tester.ensureVisible(find.text('Sign Out'));
+      await tester.scrollUntilVisible(
+        find.text('Sign Out'),
+        200,
+        scrollable: find.byType(Scrollable),
+      );
       await tester.pumpAndSettle();
       await tester.tap(find.text('Sign Out'));
       await tester.pumpAndSettle();
@@ -305,7 +315,11 @@ void main() {
         (tester) async {
       await pumpApp(tester);
 
-      await tester.ensureVisible(find.text('Sign Out'));
+      await tester.scrollUntilVisible(
+        find.text('Sign Out'),
+        200,
+        scrollable: find.byType(Scrollable),
+      );
       await tester.pumpAndSettle();
       await tester.tap(find.text('Sign Out'));
       await tester.pumpAndSettle();

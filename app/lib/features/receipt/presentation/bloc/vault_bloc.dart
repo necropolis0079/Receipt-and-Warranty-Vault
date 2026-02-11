@@ -30,7 +30,7 @@ class VaultBloc extends Bloc<VaultEvent, VaultState> {
             return const VaultEmpty();
           }
           final activeCount = receipts
-              .where((r) => r.status == ReceiptStatus.active)
+              .where((r) => r.isWarrantyActive)
               .length;
           return VaultLoaded(receipts: receipts, activeCount: activeCount);
         },

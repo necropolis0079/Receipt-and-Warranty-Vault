@@ -15,6 +15,8 @@ void main() {
   late MockReceiptRepository mockRepo;
 
   final now = DateTime.now().toIso8601String();
+  final futureExpiry =
+      DateTime.now().add(const Duration(days: 365)).toIso8601String();
 
   final testReceipt = Receipt(
     receiptId: 'r-001',
@@ -22,6 +24,8 @@ void main() {
     storeName: 'Test Store',
     status: ReceiptStatus.active,
     isFavorite: false,
+    warrantyMonths: 12,
+    warrantyExpiryDate: futureExpiry,
     createdAt: now,
     updatedAt: now,
   );
@@ -32,6 +36,8 @@ void main() {
     storeName: 'Another Store',
     status: ReceiptStatus.active,
     isFavorite: true,
+    warrantyMonths: 24,
+    warrantyExpiryDate: futureExpiry,
     createdAt: now,
     updatedAt: now,
   );
@@ -123,7 +129,7 @@ void main() {
       );
 
       blocTest<VaultBloc, VaultState>(
-        'activeCount only counts active receipts',
+        'activeCount only counts receipts with active warranties',
         build: () {
           when(() => mockRepo.watchUserReceipts(any())).thenAnswer(
             (_) => Stream.value([testReceipt, returnedReceipt]),

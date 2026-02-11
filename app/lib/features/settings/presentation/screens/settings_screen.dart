@@ -20,6 +20,7 @@ import '../../../bulk_import/presentation/cubit/bulk_import_cubit.dart';
 import '../../../bulk_import/presentation/screens/bulk_import_screen.dart';
 import '../../../receipt/presentation/screens/category_management_screen.dart';
 import '../../../receipt/presentation/screens/trash_screen.dart';
+import 'batch_export_screen.dart';
 
 /// Settings screen with live App Lock toggle and Sign Out action.
 class SettingsScreen extends StatelessWidget {
@@ -122,6 +123,17 @@ class SettingsScreen extends StatelessWidget {
                   builder: (_) => CategoryManagementScreen(
                     categoriesDao: GetIt.I<AppDatabase>().categoriesDao,
                   ),
+                ),
+              );
+            },
+          ),
+          _SettingsTile(
+            icon: Icons.file_download,
+            title: l10n.exportByDateRange,
+            onTap: () {
+              Navigator.of(context).push<void>(
+                MaterialPageRoute(
+                  builder: (_) => const BatchExportScreen(),
                 ),
               );
             },
