@@ -3,8 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:warrantyvault/core/l10n/locale_cubit.dart';
 import 'package:warrantyvault/core/security/app_lock_cubit.dart';
 import 'package:warrantyvault/core/security/app_lock_service.dart';
+import 'package:warrantyvault/core/theme/theme_cubit.dart';
 import 'package:warrantyvault/core/widgets/app_shell.dart';
 import 'package:warrantyvault/features/auth/domain/repositories/auth_repository.dart';
 import 'package:warrantyvault/features/auth/presentation/bloc/auth_bloc.dart';
@@ -25,6 +27,8 @@ void main() {
   late VaultBloc vaultBloc;
   late ExpiringBloc expiringBloc;
   late SearchBloc searchBloc;
+  late LocaleCubit localeCubit;
+  late ThemeCubit themeCubit;
 
   setUp(() {
     final mockRepo = MockAuthRepository();
@@ -48,6 +52,8 @@ void main() {
     vaultBloc = VaultBloc(receiptRepository: mockReceiptRepo);
     expiringBloc = ExpiringBloc(receiptRepository: mockReceiptRepo);
     searchBloc = SearchBloc(receiptRepository: mockReceiptRepo, userId: 'test');
+    localeCubit = LocaleCubit();
+    themeCubit = ThemeCubit();
   });
 
   tearDown(() {
@@ -56,6 +62,8 @@ void main() {
     vaultBloc.close();
     expiringBloc.close();
     searchBloc.close();
+    localeCubit.close();
+    themeCubit.close();
   });
 
   Widget buildApp() {
@@ -70,6 +78,8 @@ void main() {
           BlocProvider.value(value: vaultBloc),
           BlocProvider.value(value: expiringBloc),
           BlocProvider.value(value: searchBloc),
+          BlocProvider.value(value: localeCubit),
+          BlocProvider.value(value: themeCubit),
         ],
         child: const AppShell(),
       ),

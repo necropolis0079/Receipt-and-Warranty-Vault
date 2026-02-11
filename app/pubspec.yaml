@@ -66,6 +66,11 @@ dependencies:
   share_plus: ^10.1.4
   csv: ^6.0.0
 
+# Pin image_cropper_platform_interface to 7.1.0 — v7.2.0 uses toARGB32()
+# which requires Flutter 3.29+, but we're on 3.27.4
+dependency_overrides:
+  image_cropper_platform_interface: 7.1.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

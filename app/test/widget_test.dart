@@ -3,8 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:warrantyvault/core/l10n/locale_cubit.dart';
 import 'package:warrantyvault/core/security/app_lock_cubit.dart';
 import 'package:warrantyvault/core/security/app_lock_service.dart';
+import 'package:warrantyvault/core/theme/theme_cubit.dart';
 import 'package:warrantyvault/core/widgets/app_shell.dart';
 import 'package:warrantyvault/features/auth/domain/repositories/auth_repository.dart';
 import 'package:warrantyvault/features/auth/presentation/bloc/auth_bloc.dart';
@@ -44,6 +46,8 @@ void main() {
     final expiringBloc = ExpiringBloc(receiptRepository: mockReceiptRepo);
     final searchBloc =
         SearchBloc(receiptRepository: mockReceiptRepo, userId: 'test');
+    final localeCubit = LocaleCubit();
+    final themeCubit = ThemeCubit();
 
     addTearDown(() {
       authBloc.close();
@@ -51,6 +55,8 @@ void main() {
       vaultBloc.close();
       expiringBloc.close();
       searchBloc.close();
+      localeCubit.close();
+      themeCubit.close();
     });
 
     await tester.pumpWidget(
@@ -65,6 +71,8 @@ void main() {
             BlocProvider.value(value: vaultBloc),
             BlocProvider.value(value: expiringBloc),
             BlocProvider.value(value: searchBloc),
+            BlocProvider.value(value: localeCubit),
+            BlocProvider.value(value: themeCubit),
           ],
           child: const AppShell(),
         ),

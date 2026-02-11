@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../auth/presentation/bloc/auth_state.dart';
 import '../../../receipt/domain/entities/receipt.dart';
 import '../../../receipt/presentation/screens/receipt_detail_screen.dart';
 import '../../../receipt/presentation/widgets/receipt_card.dart';
@@ -22,12 +24,14 @@ class ExpiringScreen extends StatefulWidget {
 }
 
 class _ExpiringScreenState extends State<ExpiringScreen> {
-  static const _userId = 'demo-user';
+  late final String _userId;
 
   @override
   void initState() {
     super.initState();
-    context.read<ExpiringBloc>().add(const ExpiringLoadRequested(_userId));
+    final authState = context.read<AuthBloc>().state;
+    _userId = authState is AuthAuthenticated ? authState.user.userId : '';
+    context.read<ExpiringBloc>().add(ExpiringLoadRequested(_userId));
   }
 
   Future<void> _onRefresh() async {
@@ -62,7 +66,7 @@ class _ExpiringScreenState extends State<ExpiringScreen> {
               message: state.message,
               onRetry: () => context
                   .read<ExpiringBloc>()
-                  .add(const ExpiringLoadRequested(_userId)),
+                  .add(ExpiringLoadRequested(_userId)),
             );
           }
 

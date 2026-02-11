@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/database/daos/settings_dao.dart';
 import '../../../../core/notifications/reminder_scheduler.dart';
 import '../../../receipt/domain/repositories/receipt_repository.dart';
 import 'expiring_event.dart';
@@ -9,8 +10,10 @@ class ExpiringBloc extends Bloc<ExpiringEvent, ExpiringState> {
   ExpiringBloc({
     required ReceiptRepository receiptRepository,
     ReminderScheduler? reminderScheduler,
+    SettingsDao? settingsDao,
   })  : _receiptRepository = receiptRepository,
         _reminderScheduler = reminderScheduler,
+        _settingsDao = settingsDao,
         super(const ExpiringInitial()) {
     on<ExpiringLoadRequested>(_onLoadRequested);
     on<ExpiringRefreshRequested>(_onRefreshRequested);
@@ -18,6 +21,7 @@ class ExpiringBloc extends Bloc<ExpiringEvent, ExpiringState> {
 
   final ReceiptRepository _receiptRepository;
   final ReminderScheduler? _reminderScheduler;
+  final SettingsDao? _settingsDao;
   String? _lastUserId;
   int _lastDaysAhead = 30;
 
@@ -35,9 +39,19 @@ class ExpiringBloc extends Bloc<ExpiringEvent, ExpiringState> {
       ]);
       final expiringSoon = results[0];
       final expired = results[1];
-      // Schedule reminders for all expiring-soon receipts.
+      // Schedule reminders for all expiring-soon receipts (if enabled).
       if (_reminderScheduler != null && expiringSoon.isNotEmpty) {
-        await _reminderScheduler.scheduleForAll(expiringSoon);
+        if (_settingsDao != null) {
+          final enabled = await _settingsDao.getValue('reminders_enabled');
+          if (enabled == 'false') {
+            // Reminders disabled — skip scheduling.
+          } else {
+            await _reminderScheduler.scheduleForAll(expiringSoon);
+          }
+        } else {
+          // No settings DAO — default to enabled.
+          await _reminderScheduler.scheduleForAll(expiringSoon);
+        }
       }
 
       if (expiringSoon.isEmpty && expired.isEmpty) {

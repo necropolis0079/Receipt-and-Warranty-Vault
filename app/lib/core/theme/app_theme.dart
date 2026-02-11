@@ -297,6 +297,26 @@ abstract final class AppTheme {
     );
   }
 
+  static ThemeData get dark {
+    final colorScheme = ColorScheme.fromSeed(
+      seedColor: AppColors.primaryGreen,
+      brightness: Brightness.dark,
+    );
+    final textTheme = AppTypography.textTheme;
+
+    return ThemeData(
+      useMaterial3: true,
+      colorScheme: colorScheme,
+      textTheme: textTheme.apply(
+        bodyColor: colorScheme.onSurface,
+        displayColor: colorScheme.onSurface,
+      ),
+      scaffoldBackgroundColor: colorScheme.surface,
+      canvasColor: colorScheme.surface,
+      splashFactory: InkSparkle.splashFactory,
+    );
+  }
+
   // Box decoration presets for use outside of themed widgets
   static BoxDecoration get cardDecoration => const BoxDecoration(
         color: AppColors.surface,

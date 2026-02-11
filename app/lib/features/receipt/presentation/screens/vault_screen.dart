@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../auth/presentation/bloc/auth_state.dart';
 import '../bloc/vault_bloc.dart';
 import '../bloc/vault_event.dart';
 import '../bloc/vault_state.dart';
@@ -23,16 +25,18 @@ class VaultScreen extends StatefulWidget {
 }
 
 class _VaultScreenState extends State<VaultScreen> {
-  static const _userId = 'demo-user';
+  late final String _userId;
 
   @override
   void initState() {
     super.initState();
-    context.read<VaultBloc>().add(const VaultLoadRequested(_userId));
+    final authState = context.read<AuthBloc>().state;
+    _userId = authState is AuthAuthenticated ? authState.user.userId : '';
+    context.read<VaultBloc>().add(VaultLoadRequested(_userId));
   }
 
   Future<void> _onRefresh() async {
-    context.read<VaultBloc>().add(const VaultLoadRequested(_userId));
+    context.read<VaultBloc>().add(VaultLoadRequested(_userId));
     // Give the stream a moment to emit a new state.
     await Future<void>.delayed(const Duration(milliseconds: 500));
   }
@@ -67,7 +71,7 @@ class _VaultScreenState extends State<VaultScreen> {
               message: state.message,
               onRetry: () => context
                   .read<VaultBloc>()
-                  .add(const VaultLoadRequested(_userId)),
+                  .add(VaultLoadRequested(_userId)),
             );
           }
 

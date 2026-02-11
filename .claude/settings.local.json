@@ -63,7 +63,16 @@
       "Bash(Select-String -Pattern \"\\\\+\\\\d+ -1:\" -Context 0,0)",
       "Bash(Select-Object -First 5)",
       "Bash(AWS_PROFILE=warrantyvault aws cloudformation:*)",
-      "Bash(if not exist \"D:\\\\Receipt and Warranty Vault\\\\app\\\\test\\\\features\\\\receipt\\\\presentation\\\\bloc\" mkdir \"D:\\\\Receipt and Warranty Vault\\\\app\\\\test\\\\features\\\\receipt\\\\presentation\\\\bloc\")"
+      "Bash(if not exist \"D:\\\\Receipt and Warranty Vault\\\\app\\\\test\\\\features\\\\receipt\\\\presentation\\\\bloc\" mkdir \"D:\\\\Receipt and Warranty Vault\\\\app\\\\test\\\\features\\\\receipt\\\\presentation\\\\bloc\")",
+      "Bash(flutter devices:*)",
+      "Bash(adb devices:*)",
+      "Bash(flutter run:*)",
+      "Bash(flutter clean:*)",
+      "Bash(for file in \"D:\\\\Receipt and Warranty Vault\\\\app\\\\test\"/**/*.dart)",
+      "Bash(do grep -l \"import.*sync_service\\\\|import.*cloud\\\\|import.*SyncService\\\\|import.*CloudSync\" \"$file\")",
+      "Bash(dart pub deps:*)",
+      "WebFetch(domain:pub.dev)",
+      "Bash(wmic logicaldisk get size,freespace,caption:*)"
     ]
   },
   "hooks": {

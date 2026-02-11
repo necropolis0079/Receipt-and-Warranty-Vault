@@ -2,16 +2,16 @@ import 'package:get_it/get_it.dart';
 
 import '../database/app_database.dart';
 import '../database/database_provider.dart';
-import '../notifications/mock_notification_service.dart';
+import '../notifications/local_notification_service.dart';
 import '../notifications/notification_service.dart';
 import '../notifications/reminder_scheduler.dart';
 import '../../features/auth/data/repositories/mock_auth_repository.dart';
 import '../../features/auth/domain/repositories/auth_repository.dart';
 import '../../features/auth/presentation/bloc/auth_bloc.dart';
 import '../../features/receipt/data/repositories/local_receipt_repository.dart';
-import '../../features/receipt/data/services/mock_export_service.dart';
-import '../../features/receipt/data/services/mock_image_pipeline_service.dart';
-import '../../features/receipt/data/services/mock_ocr_service.dart';
+import '../../features/receipt/data/services/device_export_service.dart';
+import '../../features/receipt/data/services/device_image_pipeline_service.dart';
+import '../../features/receipt/data/services/hybrid_ocr_service.dart';
 import '../../features/receipt/domain/repositories/receipt_repository.dart';
 import '../../features/receipt/domain/services/export_service.dart';
 import '../../features/receipt/domain/services/image_pipeline_service.dart';
@@ -40,13 +40,16 @@ Future<void> configureDependencies() async {
   // --- Core Services ---
   getIt.registerLazySingleton<AppLockService>(() => LocalAuthService());
   getIt.registerLazySingleton<ImagePipelineService>(
-    () => MockImagePipelineService(),
+    () => DeviceImagePipelineService(),
   );
-  getIt.registerLazySingleton<OcrService>(() => MockOcrService());
+  getIt.registerLazySingleton<OcrService>(
+    () => HybridOcrService(),
+    dispose: (service) => (service as HybridOcrService).dispose(),
+  );
   getIt.registerLazySingleton<NotificationService>(
-    () => MockNotificationService(),
+    () => LocalNotificationService(),
   );
-  getIt.registerLazySingleton<ExportService>(() => MockExportService());
+  getIt.registerLazySingleton<ExportService>(() => DeviceExportService());
   getIt.registerLazySingleton<ReminderScheduler>(
     () => ReminderScheduler(
       notificationService: getIt<NotificationService>(),
@@ -77,6 +80,7 @@ Future<void> configureDependencies() async {
     () => ExpiringBloc(
       receiptRepository: getIt<ReceiptRepository>(),
       reminderScheduler: getIt<ReminderScheduler>(),
+      settingsDao: getIt<AppDatabase>().settingsDao,
     ),
   );
   getIt.registerFactory<CategoryManagementCubit>(

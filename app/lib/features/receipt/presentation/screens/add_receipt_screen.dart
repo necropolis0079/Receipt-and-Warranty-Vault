@@ -5,6 +5,8 @@ import 'package:get_it/get_it.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
+import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../auth/presentation/bloc/auth_state.dart';
 import '../../domain/repositories/receipt_repository.dart';
 import '../../domain/services/image_pipeline_service.dart';
 import '../../domain/services/ocr_service.dart';
@@ -24,8 +26,6 @@ class AddReceiptScreen extends StatelessWidget {
   const AddReceiptScreen({super.key, this.initialOption});
 
   final CaptureOption? initialOption;
-
-  static const _userId = 'demo-user';
 
   @override
   Widget build(BuildContext context) {
@@ -102,9 +102,11 @@ class _AddReceiptBody extends StatelessWidget {
         state is AddReceiptFieldsReady) {
       actions.add(
         TextButton(
-          onPressed: () => context
-              .read<AddReceiptBloc>()
-              .add(const FastSave(AddReceiptScreen._userId)),
+          onPressed: () {
+            final authState = context.read<AuthBloc>().state;
+            final userId = authState is AuthAuthenticated ? authState.user.userId : '';
+            context.read<AddReceiptBloc>().add(FastSave(userId));
+          },
           child: Text(
             l10n.fastSave,
             style: const TextStyle(fontWeight: FontWeight.w600),
@@ -439,9 +441,11 @@ class _FieldsReadyViewState extends State<_FieldsReadyView> {
 
           // Save button
           FilledButton.icon(
-            onPressed: () => bloc.add(
-              const SaveReceipt(AddReceiptScreen._userId),
-            ),
+            onPressed: () {
+              final authState = context.read<AuthBloc>().state;
+              final userId = authState is AuthAuthenticated ? authState.user.userId : '';
+              bloc.add(SaveReceipt(userId));
+            },
             icon: const Icon(Icons.save),
             label: Text(l10n.save),
             style: FilledButton.styleFrom(
