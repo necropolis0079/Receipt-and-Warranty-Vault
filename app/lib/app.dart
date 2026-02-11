@@ -16,8 +16,8 @@ import 'features/warranty/presentation/bloc/expiring_bloc.dart';
 ///
 /// Provides [AuthBloc], [AppLockCubit], [LocaleCubit], [VaultBloc],
 /// and [ExpiringBloc] at the top of the widget tree. User-dependent
-/// BLoCs ([SearchBloc], [SyncBloc], [TrashCubit]) are provided in
-/// [AuthGate] after authentication succeeds.
+/// BLoCs ([SearchBloc], [TrashCubit]) are provided in [AuthGate]
+/// after authentication succeeds.
 class WarrantyVaultApp extends StatelessWidget {
   const WarrantyVaultApp({super.key});
 

@@ -9,8 +9,6 @@ import '../../features/auth/presentation/screens/password_reset_screen.dart';
 import '../../features/auth/presentation/screens/sign_in_screen.dart';
 import '../../features/auth/presentation/screens/sign_up_screen.dart';
 import '../../features/auth/presentation/screens/welcome_screen.dart';
-import '../../features/receipt/presentation/bloc/sync_bloc.dart';
-import '../../features/receipt/presentation/bloc/sync_event.dart';
 import '../../features/receipt/presentation/bloc/trash_cubit.dart';
 import '../../features/search/presentation/bloc/search_bloc.dart';
 import '../di/injection.dart';
@@ -73,11 +71,6 @@ class _AuthGateState extends State<AuthGate> {
               ),
               BlocProvider(
                 create: (_) => getIt<TrashCubit>(param1: userId),
-              ),
-              BlocProvider(
-                create: (_) =>
-                    getIt<SyncBloc>(param1: userId)
-                      ..add(const SyncRequested()),
               ),
             ],
             child: BlocBuilder<AppLockCubit, AppLockState>(

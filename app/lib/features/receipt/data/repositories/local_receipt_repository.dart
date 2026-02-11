@@ -1,21 +1,15 @@
 import '../../../../core/database/daos/receipts_dao.dart';
-import '../../../../core/database/daos/sync_queue_dao.dart';
 import '../../domain/entities/receipt.dart';
 import '../../domain/repositories/receipt_repository.dart';
 import '../models/receipt_mapper.dart';
 
 /// Local-only [ReceiptRepository] backed by Drift + SQLCipher.
-///
-/// Every save/update/delete auto-enqueues to [SyncQueueDao] for later sync.
 class LocalReceiptRepository implements ReceiptRepository {
   LocalReceiptRepository({
     required ReceiptsDao receiptsDao,
-    required SyncQueueDao syncQueueDao,
-  })  : _receiptsDao = receiptsDao,
-        _syncQueueDao = syncQueueDao;
+  }) : _receiptsDao = receiptsDao;
 
   final ReceiptsDao _receiptsDao;
-  final SyncQueueDao _syncQueueDao;
 
   @override
   Stream<List<Receipt>> watchUserReceipts(String userId) {
@@ -34,35 +28,22 @@ class LocalReceiptRepository implements ReceiptRepository {
   Future<void> saveReceipt(Receipt receipt) async {
     final companion = ReceiptMapper.toCompanion(receipt);
     await _receiptsDao.insertReceipt(companion);
-    await _syncQueueDao.enqueue(
-      receiptId: receipt.receiptId,
-      operation: 'create',
-    );
   }
 
   @override
   Future<void> updateReceipt(Receipt receipt) async {
     final companion = ReceiptMapper.toCompanion(receipt);
     await _receiptsDao.updateReceipt(companion);
-    await _syncQueueDao.enqueue(
-      receiptId: receipt.receiptId,
-      operation: 'update',
-    );
   }
 
   @override
   Future<void> softDelete(String receiptId) async {
     await _receiptsDao.softDelete(receiptId);
-    await _syncQueueDao.enqueue(
-      receiptId: receiptId,
-      operation: 'delete',
-    );
   }
 
   @override
   Future<void> hardDelete(String receiptId) async {
     await _receiptsDao.hardDelete(receiptId);
-    await _syncQueueDao.clearForReceipt(receiptId);
   }
 
   @override
@@ -102,10 +83,6 @@ class LocalReceiptRepository implements ReceiptRepository {
   @override
   Future<void> restoreReceipt(String receiptId) async {
     await _receiptsDao.restoreReceipt(receiptId);
-    await _syncQueueDao.enqueue(
-      receiptId: receiptId,
-      operation: 'update',
-    );
   }
 
   @override

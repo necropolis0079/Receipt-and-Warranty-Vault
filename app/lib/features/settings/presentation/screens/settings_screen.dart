@@ -44,14 +44,6 @@ class SettingsScreen extends StatelessWidget {
             },
           ),
           _SettingsTile(
-            icon: Icons.cloud,
-            title: l10n.storageMode,
-            subtitle: l10n.cloudAndDevice,
-            onTap: () {
-              // TODO: Implement storage mode selection
-            },
-          ),
-          _SettingsTile(
             icon: Icons.notifications,
             title: l10n.warrantyReminders,
             subtitle: 'Enabled',
@@ -91,11 +83,11 @@ class SettingsScreen extends StatelessWidget {
             icon: Icons.delete_outline,
             title: l10n.trash,
             onTap: () {
-              final trashCubit = GetIt.I<TrashCubit>(param1: 'local-user');
+              final trashCubit = context.read<TrashCubit>()..loadDeleted();
               Navigator.of(context).push<void>(
                 MaterialPageRoute(
                   builder: (_) => BlocProvider.value(
-                    value: trashCubit..loadDeleted(),
+                    value: trashCubit,
                     child: const TrashScreen(),
                   ),
                 ),
