@@ -1,8 +1,10 @@
+import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:warrantyvault/core/database/app_database.dart';
 import 'package:warrantyvault/core/di/injection.dart';
 import 'package:warrantyvault/core/l10n/locale_cubit.dart';
 import 'package:warrantyvault/core/router/auth_gate.dart';
@@ -37,6 +39,7 @@ void main() {
   late SearchBloc searchBloc;
   late LocaleCubit localeCubit;
   late ThemeCubit themeCubit;
+  late AppDatabase db;
 
   const testUser = AuthUser(
     userId: 'test-id',
@@ -81,6 +84,12 @@ void main() {
     // Register user-dependent BLoC factories in GetIt
     // (AuthGate resolves these via getIt<T>(param1: userId) when authenticated).
     await getIt.reset();
+
+    // In-memory database for settings DAO (bulk import check)
+    db = AppDatabase.forTesting(NativeDatabase.memory());
+    await db.settingsDao.setValue('bulk_import_shown', 'true');
+    getIt.registerSingleton<AppDatabase>(db);
+
     getIt.registerFactoryParam<SearchBloc, String, void>(
       (userId, _) => SearchBloc(
         receiptRepository: mockReceiptRepo,
@@ -111,6 +120,7 @@ void main() {
     searchBloc.close();
     localeCubit.close();
     themeCubit.close();
+    await db.close();
     await getIt.reset();
   });
 

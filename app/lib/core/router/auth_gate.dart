@@ -9,8 +9,11 @@ import '../../features/auth/presentation/screens/password_reset_screen.dart';
 import '../../features/auth/presentation/screens/sign_in_screen.dart';
 import '../../features/auth/presentation/screens/sign_up_screen.dart';
 import '../../features/auth/presentation/screens/welcome_screen.dart';
+import '../../features/bulk_import/presentation/cubit/bulk_import_cubit.dart';
+import '../../features/bulk_import/presentation/screens/bulk_import_screen.dart';
 import '../../features/receipt/presentation/bloc/trash_cubit.dart';
 import '../../features/search/presentation/bloc/search_bloc.dart';
+import '../database/app_database.dart';
 import '../di/injection.dart';
 import '../security/app_lock_cubit.dart';
 import '../security/app_lock_state.dart';
@@ -30,6 +33,12 @@ class _AuthGateState extends State<AuthGate> {
   /// Sub-navigation within the unauthenticated flow.
   _UnauthPage _currentPage = _UnauthPage.welcome;
   String? _verificationEmail;
+
+  /// Whether we're currently showing the bulk import onboarding screen.
+  bool _showBulkImport = false;
+
+  /// Whether the first-launch check has already been performed.
+  bool _bulkImportChecked = false;
 
   @override
   void initState() {
@@ -64,6 +73,12 @@ class _AuthGateState extends State<AuthGate> {
         if (authState is AuthAuthenticated) {
           final userId = authState.user.userId;
 
+          // First-launch bulk import check
+          if (!_bulkImportChecked) {
+            _bulkImportChecked = true;
+            _checkBulkImportShown();
+          }
+
           return MultiBlocProvider(
             providers: [
               BlocProvider(
@@ -73,17 +88,31 @@ class _AuthGateState extends State<AuthGate> {
                 create: (_) => getIt<TrashCubit>(param1: userId),
               ),
             ],
-            child: BlocBuilder<AppLockCubit, AppLockState>(
-              builder: (context, lockState) {
-                return Stack(
-                  children: [
-                    const AppShell(),
-                    if (lockState.isEnabled && lockState.isLocked)
-                      const Positioned.fill(child: LockScreen()),
-                  ],
-                );
-              },
-            ),
+            child: _showBulkImport
+                ? BlocProvider(
+                    create: (_) => getIt<BulkImportCubit>(),
+                    child: BulkImportScreen(
+                      onComplete: () async {
+                        await getIt<AppDatabase>()
+                            .settingsDao
+                            .setValue('bulk_import_shown', 'true');
+                        if (mounted) {
+                          setState(() => _showBulkImport = false);
+                        }
+                      },
+                    ),
+                  )
+                : BlocBuilder<AppLockCubit, AppLockState>(
+                    builder: (context, lockState) {
+                      return Stack(
+                        children: [
+                          const AppShell(),
+                          if (lockState.isEnabled && lockState.isLocked)
+                            const Positioned.fill(child: LockScreen()),
+                        ],
+                      );
+                    },
+                  ),
           );
         }
 
@@ -91,6 +120,14 @@ class _AuthGateState extends State<AuthGate> {
         return _buildUnauthenticatedFlow();
       },
     );
+  }
+
+  Future<void> _checkBulkImportShown() async {
+    final value =
+        await getIt<AppDatabase>().settingsDao.getValue('bulk_import_shown');
+    if (value == null && mounted) {
+      setState(() => _showBulkImport = true);
+    }
   }
 
   Widget _buildUnauthenticatedFlow() {

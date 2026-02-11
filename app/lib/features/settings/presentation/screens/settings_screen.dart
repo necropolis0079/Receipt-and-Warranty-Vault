@@ -16,6 +16,8 @@ import '../../../../core/theme/theme_state.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_event.dart';
 import '../../../receipt/presentation/bloc/trash_cubit.dart';
+import '../../../bulk_import/presentation/cubit/bulk_import_cubit.dart';
+import '../../../bulk_import/presentation/screens/bulk_import_screen.dart';
 import '../../../receipt/presentation/screens/category_management_screen.dart';
 import '../../../receipt/presentation/screens/trash_screen.dart';
 
@@ -119,6 +121,20 @@ class SettingsScreen extends StatelessWidget {
                 MaterialPageRoute(
                   builder: (_) => CategoryManagementScreen(
                     categoriesDao: GetIt.I<AppDatabase>().categoriesDao,
+                  ),
+                ),
+              );
+            },
+          ),
+          _SettingsTile(
+            icon: Icons.photo_library,
+            title: l10n.bulkImport,
+            onTap: () {
+              Navigator.of(context).push<void>(
+                MaterialPageRoute(
+                  builder: (_) => BlocProvider(
+                    create: (_) => GetIt.I<BulkImportCubit>(),
+                    child: const BulkImportScreen(),
                   ),
                 ),
               );

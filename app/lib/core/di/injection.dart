@@ -8,6 +8,9 @@ import '../notifications/reminder_scheduler.dart';
 import '../../features/auth/data/repositories/mock_auth_repository.dart';
 import '../../features/auth/domain/repositories/auth_repository.dart';
 import '../../features/auth/presentation/bloc/auth_bloc.dart';
+import '../../features/bulk_import/data/services/device_gallery_scanner_service.dart';
+import '../../features/bulk_import/domain/services/gallery_scanner_service.dart';
+import '../../features/bulk_import/presentation/cubit/bulk_import_cubit.dart';
 import '../../features/receipt/data/repositories/local_receipt_repository.dart';
 import '../../features/receipt/data/services/device_export_service.dart';
 import '../../features/receipt/data/services/device_image_pipeline_service.dart';
@@ -50,6 +53,9 @@ Future<void> configureDependencies() async {
     () => LocalNotificationService(),
   );
   getIt.registerLazySingleton<ExportService>(() => DeviceExportService());
+  getIt.registerLazySingleton<GalleryScannerService>(
+    () => DeviceGalleryScannerService(),
+  );
   getIt.registerLazySingleton<ReminderScheduler>(
     () => ReminderScheduler(
       notificationService: getIt<NotificationService>(),
@@ -98,6 +104,14 @@ Future<void> configureDependencies() async {
     (userId, _) => TrashCubit(
       receiptRepository: getIt<ReceiptRepository>(),
       userId: userId,
+    ),
+  );
+  getIt.registerFactory<BulkImportCubit>(
+    () => BulkImportCubit(
+      galleryScannerService: getIt<GalleryScannerService>(),
+      imagePipelineService: getIt<ImagePipelineService>(),
+      ocrService: getIt<OcrService>(),
+      receiptRepository: getIt<ReceiptRepository>(),
     ),
   );
 
