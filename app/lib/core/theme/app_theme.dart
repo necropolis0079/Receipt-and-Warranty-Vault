@@ -8,9 +8,9 @@ import '../constants/app_spacing.dart';
 import 'app_typography.dart';
 
 abstract final class AppTheme {
-  static ThemeData get light {
+  static ThemeData light({String locale = 'en'}) {
     final colorScheme = AppColors.lightColorScheme;
-    final textTheme = AppTypography.textTheme;
+    final textTheme = AppTypography.textTheme(locale: locale);
 
     return ThemeData(
       useMaterial3: true,
@@ -297,12 +297,12 @@ abstract final class AppTheme {
     );
   }
 
-  static ThemeData get dark {
+  static ThemeData dark({String locale = 'en'}) {
     final colorScheme = ColorScheme.fromSeed(
       seedColor: AppColors.primaryGreen,
       brightness: Brightness.dark,
     );
-    final textTheme = AppTypography.textTheme;
+    final textTheme = AppTypography.textTheme(locale: locale);
 
     return ThemeData(
       useMaterial3: true,

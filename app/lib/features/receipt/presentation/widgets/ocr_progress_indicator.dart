@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../../core/constants/app_colors.dart';
 
@@ -11,12 +12,13 @@ class OcrProgressIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final (String label, IconData? icon) = switch (status) {
-      OcrProgressStatus.scanning => ('Scanning receipt...', null),
-      OcrProgressStatus.extracting => ('Extracting text...', null),
-      OcrProgressStatus.analyzing => ('Analyzing fields...', null),
-      OcrProgressStatus.complete => ('Analysis complete', Icons.check_circle),
-      OcrProgressStatus.failed => ('Analysis failed', Icons.error_outline),
+      OcrProgressStatus.scanning => (l10n.scanningReceipt, null),
+      OcrProgressStatus.extracting => (l10n.extractingData, null),
+      OcrProgressStatus.analyzing => (l10n.analyzingFields, null),
+      OcrProgressStatus.complete => (l10n.analysisComplete, Icons.check_circle),
+      OcrProgressStatus.failed => (l10n.analysisFailed, Icons.error_outline),
     };
 
     final isComplete = status == OcrProgressStatus.complete;

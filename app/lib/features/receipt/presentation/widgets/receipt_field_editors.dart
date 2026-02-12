@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class StoreNameField extends StatelessWidget {
   const StoreNameField({super.key, required this.controller, this.onChanged});
@@ -9,11 +10,12 @@ class StoreNameField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return TextFormField(
       controller: controller,
-      decoration: const InputDecoration(
-        labelText: 'Store Name',
-        prefixIcon: Icon(Icons.store_outlined),
+      decoration: InputDecoration(
+        labelText: l10n.storeName,
+        prefixIcon: const Icon(Icons.store_outlined),
       ),
       onChanged: onChanged,
       textCapitalization: TextCapitalization.words,
@@ -33,12 +35,13 @@ class PurchaseDateField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return TextFormField(
       readOnly: true,
       decoration: InputDecoration(
-        labelText: 'Purchase Date',
+        labelText: l10n.purchaseDate,
         prefixIcon: const Icon(Icons.calendar_today_outlined),
-        hintText: value ?? 'Select date',
+        hintText: value ?? l10n.selectDate,
       ),
       controller: TextEditingController(text: value),
       onTap: () async {
@@ -68,11 +71,12 @@ class TotalAmountField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return TextFormField(
       controller: controller,
-      decoration: const InputDecoration(
-        labelText: 'Total Amount',
-        prefixIcon: Icon(Icons.euro_outlined),
+      decoration: InputDecoration(
+        labelText: l10n.totalAmount,
+        prefixIcon: const Icon(Icons.euro_outlined),
       ),
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
       inputFormatters: [
@@ -97,11 +101,12 @@ class CurrencySelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return DropdownButtonFormField<String>(
       value: value,
-      decoration: const InputDecoration(
-        labelText: 'Currency',
-        prefixIcon: Icon(Icons.attach_money),
+      decoration: InputDecoration(
+        labelText: l10n.currency,
+        prefixIcon: const Icon(Icons.attach_money),
       ),
       items: _currencies
           .map((c) => DropdownMenuItem(value: c, child: Text(c)))
@@ -127,16 +132,17 @@ class WarrantyEditor extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return DropdownButtonFormField<int>(
       value: _options.contains(months) ? months : 0,
-      decoration: const InputDecoration(
-        labelText: 'Warranty Period',
-        prefixIcon: Icon(Icons.shield_outlined),
+      decoration: InputDecoration(
+        labelText: l10n.warrantyPeriod,
+        prefixIcon: const Icon(Icons.shield_outlined),
       ),
       items: _options
           .map((m) => DropdownMenuItem(
                 value: m,
-                child: Text(m == 0 ? 'No Warranty' : '$m months'),
+                child: Text(m == 0 ? l10n.noWarranty : l10n.monthsCount(m)),
               ))
           .toList(),
       onChanged: (v) {
@@ -160,13 +166,14 @@ class CategoryPickerField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return DropdownButtonFormField<String>(
       value: value != null && categories.contains(value) ? value : null,
-      decoration: const InputDecoration(
-        labelText: 'Category',
-        prefixIcon: Icon(Icons.category_outlined),
+      decoration: InputDecoration(
+        labelText: l10n.category,
+        prefixIcon: const Icon(Icons.category_outlined),
       ),
-      hint: const Text('Select category'),
+      hint: Text(l10n.selectCategory),
       items: categories
           .map((c) => DropdownMenuItem(value: c, child: Text(c)))
           .toList(),
@@ -185,11 +192,12 @@ class NotesField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return TextFormField(
       controller: controller,
-      decoration: const InputDecoration(
-        labelText: 'Notes',
-        prefixIcon: Icon(Icons.notes_outlined),
+      decoration: InputDecoration(
+        labelText: l10n.notes,
+        prefixIcon: const Icon(Icons.notes_outlined),
         alignLabelWithHint: true,
       ),
       maxLines: 3,

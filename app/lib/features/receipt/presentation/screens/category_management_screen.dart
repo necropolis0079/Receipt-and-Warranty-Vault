@@ -28,6 +28,22 @@ class CategoryManagementScreen extends StatelessWidget {
 class _CategoryManagementBody extends StatelessWidget {
   const _CategoryManagementBody();
 
+  static IconData _categoryIcon(String? iconName) {
+    return switch (iconName) {
+      'electronics' => Icons.devices,
+      'cart' => Icons.shopping_cart,
+      'clothing' => Icons.checkroom,
+      'home' => Icons.chair,
+      'health' => Icons.local_pharmacy,
+      'restaurant' => Icons.restaurant,
+      'car' => Icons.directions_car,
+      'entertainment' => Icons.movie,
+      'subscription' => Icons.subscriptions,
+      'other' => Icons.more_horiz,
+      _ => Icons.category,
+    };
+  }
+
   void _showAddCategoryDialog(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final controller = TextEditingController();
@@ -92,9 +108,7 @@ class _CategoryManagementBody extends StatelessWidget {
             itemBuilder: (context, index) {
               final category = state.categories[index];
               return ListTile(
-                leading: category.icon != null
-                    ? Text(category.icon!, style: const TextStyle(fontSize: 24))
-                    : const Icon(Icons.category),
+                leading: Icon(_categoryIcon(category.icon)),
                 title: Text(category.name),
                 subtitle: category.isDefault
                     ? Text(l10n.defaultCategory)

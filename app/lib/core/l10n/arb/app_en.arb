@@ -1261,5 +1261,34 @@
   "maybeLater": "Maybe Later",
   "@maybeLater": {
     "description": "Button to dismiss app lock prompt"
+  },
+
+  "selectDate": "Select date",
+  "@selectDate": {
+    "description": "Hint text for date picker field"
+  },
+  "warrantyPeriod": "Warranty Period",
+  "@warrantyPeriod": {
+    "description": "Label for warranty period dropdown"
+  },
+  "selectCategory": "Select category",
+  "@selectCategory": {
+    "description": "Hint text for category picker"
+  },
+  "allWarrantiesSafe": "All your warranties are safe for now.",
+  "@allWarrantiesSafe": {
+    "description": "Subtitle on expiring screen empty state"
+  },
+  "analyzingFields": "Analyzing fields...",
+  "@analyzingFields": {
+    "description": "OCR progress status when analyzing extracted fields"
+  },
+  "analysisComplete": "Analysis complete",
+  "@analysisComplete": {
+    "description": "OCR progress status when analysis is done"
+  },
+  "analysisFailed": "Analysis failed",
+  "@analysisFailed": {
+    "description": "OCR progress status when analysis fails"
   }
 }

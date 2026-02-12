@@ -16,7 +16,7 @@ void main() {
       // unhandled async errors that fail the test. Wrapping theme creation
       // in runZonedGuarded catches those errors in a separate error zone.
       runZonedGuarded(() {
-        theme = AppTheme.light;
+        theme = AppTheme.light();
       }, (_, __) {});
     });
 
@@ -82,23 +82,52 @@ void main() {
         expect(theme.textTheme.labelSmall, isNotNull);
       });
 
-      test('heading styles use DM Serif Display font family', () {
+      test('English heading styles use DM Serif Display font family', () {
         final displayLarge = theme.textTheme.displayLarge!;
         final headlineMedium = theme.textTheme.headlineMedium!;
         expect(displayLarge.fontFamily, contains('DMSerifDisplay'));
         expect(headlineMedium.fontFamily, contains('DMSerifDisplay'));
       });
 
-      test('body styles use Plus Jakarta Sans font family', () {
+      test('English body styles use Plus Jakarta Sans font family', () {
         final bodyMedium = theme.textTheme.bodyMedium!;
         final labelLarge = theme.textTheme.labelLarge!;
         expect(bodyMedium.fontFamily, contains('PlusJakartaSans'));
         expect(labelLarge.fontFamily, contains('PlusJakartaSans'));
       });
 
-      test('title styles use Plus Jakarta Sans font family', () {
+      test('English title styles use Plus Jakarta Sans font family', () {
         final titleLarge = theme.textTheme.titleLarge!;
         expect(titleLarge.fontFamily, contains('PlusJakartaSans'));
+      });
+    });
+
+    group('Greek locale TextTheme', () {
+      late ThemeData greekTheme;
+
+      setUpAll(() {
+        runZonedGuarded(() {
+          greekTheme = AppTheme.light(locale: 'el');
+        }, (_, __) {});
+      });
+
+      test('Greek heading styles use Noto Serif font family', () {
+        final displayLarge = greekTheme.textTheme.displayLarge!;
+        final headlineMedium = greekTheme.textTheme.headlineMedium!;
+        expect(displayLarge.fontFamily, contains('NotoSerif'));
+        expect(headlineMedium.fontFamily, contains('NotoSerif'));
+      });
+
+      test('Greek body styles use Noto Sans font family', () {
+        final bodyMedium = greekTheme.textTheme.bodyMedium!;
+        final labelLarge = greekTheme.textTheme.labelLarge!;
+        expect(bodyMedium.fontFamily, contains('NotoSans'));
+        expect(labelLarge.fontFamily, contains('NotoSans'));
+      });
+
+      test('Greek title styles use Noto Sans font family', () {
+        final titleLarge = greekTheme.textTheme.titleLarge!;
+        expect(titleLarge.fontFamily, contains('NotoSans'));
       });
     });
 

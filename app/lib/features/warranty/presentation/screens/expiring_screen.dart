@@ -188,7 +188,7 @@ class _EmptyBody extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'All your warranties are safe for now.',
+              l10n.allWarrantiesSafe,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: AppColors.textSecondary,
               ),

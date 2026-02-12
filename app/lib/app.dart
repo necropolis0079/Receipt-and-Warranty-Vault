@@ -55,11 +55,12 @@ class WarrantyVaultApp extends StatelessWidget {
         builder: (context, localeState) {
           return BlocBuilder<ThemeCubit, ThemeState>(
             builder: (context, themeState) {
+              final langCode = localeState.locale.languageCode;
               return MaterialApp(
                 title: 'Warranty Vault',
                 debugShowCheckedModeBanner: false,
-                theme: AppTheme.light,
-                darkTheme: AppTheme.dark,
+                theme: AppTheme.light(locale: langCode),
+                darkTheme: AppTheme.dark(locale: langCode),
                 themeMode: _resolveThemeMode(themeState.mode),
                 localizationsDelegates:
                     AppLocalizations.localizationsDelegates,
