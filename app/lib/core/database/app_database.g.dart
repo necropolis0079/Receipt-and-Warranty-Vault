@@ -518,10 +518,10 @@ class ReceiptEntry extends DataClass implements Insertable<ReceiptEntry> {
   /// ISO 8601 datetime. Set on soft delete.
   final String? deletedAt;
 
-  /// synced | pending | conflict
+  /// Unused — retained to avoid DB migration.
   final String syncStatus;
 
-  /// ISO 8601 datetime of last successful sync for this receipt.
+  /// Unused — retained to avoid DB migration.
   final String? lastSyncedAt;
 
   /// JSON list of local file paths for cached/captured images.
@@ -2344,7 +2344,6 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $SettingsTable settings = $SettingsTable(this);
   late final ReceiptsDao receiptsDao = ReceiptsDao(this as AppDatabase);
   late final CategoriesDao categoriesDao = CategoriesDao(this as AppDatabase);
-  late final SyncQueueDao syncQueueDao = SyncQueueDao(this as AppDatabase);
   late final SettingsDao settingsDao = SettingsDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>

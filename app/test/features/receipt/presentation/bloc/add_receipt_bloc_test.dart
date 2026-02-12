@@ -59,6 +59,13 @@ void main() {
     mockOcrService = MockOcrService();
     mockReceiptRepo = MockReceiptRepository();
 
+    // Stub permission checks — all tests assume permission is granted unless
+    // overridden in the individual test's `build` callback.
+    when(() => mockImagePipeline.requestCameraPermission())
+        .thenAnswer((_) async => true);
+    when(() => mockImagePipeline.requestStoragePermission())
+        .thenAnswer((_) async => true);
+
     registerFallbackValue(FakeReceipt());
   });
 

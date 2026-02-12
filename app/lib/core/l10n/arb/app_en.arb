@@ -143,9 +143,29 @@
   "@takePhoto": {
     "description": "Button to capture a receipt using the camera"
   },
+  "captureWithCamera": "Capture receipt with camera",
+  "@captureWithCamera": {
+    "description": "Subtitle for the camera capture option"
+  },
   "importFromGallery": "Import from Gallery",
   "@importFromGallery": {
     "description": "Button to import a receipt image from the photo gallery"
+  },
+  "chooseFromGallery": "Choose from Gallery",
+  "@chooseFromGallery": {
+    "description": "Label for gallery picker option"
+  },
+  "selectExistingPhotos": "Select existing photos",
+  "@selectExistingPhotos": {
+    "description": "Subtitle for the gallery picker option"
+  },
+  "importFiles": "Import Files",
+  "@importFiles": {
+    "description": "Label for file import option"
+  },
+  "imagesOrPdfDocuments": "Images or PDF documents",
+  "@imagesOrPdfDocuments": {
+    "description": "Subtitle for the file import option"
   },
   "importFromFiles": "Import from Files",
   "@importFromFiles": {
@@ -168,9 +188,17 @@
   "@storeName": {
     "description": "Label for the store/merchant name field"
   },
+  "store": "Store",
+  "@store": {
+    "description": "Short label for store field in detail screen"
+  },
   "purchaseDate": "Purchase Date",
   "@purchaseDate": {
     "description": "Label for the purchase date field"
+  },
+  "total": "Total",
+  "@total": {
+    "description": "Short label for total amount in detail screen"
   },
   "totalAmount": "Total Amount",
   "@totalAmount": {
@@ -184,6 +212,10 @@
   "@category": {
     "description": "Label for the category field"
   },
+  "uncategorized": "Uncategorized",
+  "@uncategorized": {
+    "description": "Label when no category is set"
+  },
   "warrantyMonths": "Warranty (Months)",
   "@warrantyMonths": {
     "description": "Label for the warranty duration in months field"
@@ -191,6 +223,28 @@
   "warrantyExpiry": "Warranty Expiry",
   "@warrantyExpiry": {
     "description": "Label for the warranty expiry date field"
+  },
+  "warranty": "Warranty",
+  "@warranty": {
+    "description": "Short label for warranty section"
+  },
+  "duration": "Duration",
+  "@duration": {
+    "description": "Label for duration field"
+  },
+  "expires": "Expires",
+  "@expires": {
+    "description": "Label for expiry date field"
+  },
+  "monthsWithCount": "{count} months",
+  "@monthsWithCount": {
+    "description": "Months count for warranty duration display",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "12"
+      }
+    }
   },
   "notes": "Notes",
   "@notes": {
@@ -203,6 +257,18 @@
   "status": "Status",
   "@status": {
     "description": "Label for the receipt status field"
+  },
+  "notAvailable": "N/A",
+  "@notAvailable": {
+    "description": "Displayed when a value is not available"
+  },
+  "noImages": "No images",
+  "@noImages": {
+    "description": "Placeholder when receipt has no images"
+  },
+  "imageNotAvailable": "Image not available",
+  "@imageNotAvailable": {
+    "description": "Placeholder when image file cannot be loaded"
   },
 
   "statusActive": "Active",
@@ -234,6 +300,10 @@
   "@edit": {
     "description": "Edit action button"
   },
+  "editReceipt": "Edit Receipt",
+  "@editReceipt": {
+    "description": "Title for the edit receipt screen"
+  },
   "share": "Share",
   "@share": {
     "description": "Share action button"
@@ -245,6 +315,10 @@
   "markAsReturned": "Mark as Returned",
   "@markAsReturned": {
     "description": "Action to mark a receipt as returned"
+  },
+  "returned": "Returned",
+  "@returned": {
+    "description": "Short label for returned action button"
   },
   "undoReturn": "Undo Return",
   "@undoReturn": {
@@ -331,18 +405,6 @@
   "themeSystem": "System",
   "@themeSystem": {
     "description": "System theme option (follows OS)"
-  },
-  "storageMode": "Storage Mode",
-  "@storageMode": {
-    "description": "Settings option for storage mode"
-  },
-  "cloudAndDevice": "Cloud & Device",
-  "@cloudAndDevice": {
-    "description": "Storage mode: synced to cloud and stored locally"
-  },
-  "deviceOnly": "Device Only",
-  "@deviceOnly": {
-    "description": "Storage mode: stored only on device"
   },
   "warrantyReminders": "Warranty Reminders",
   "@warrantyReminders": {
@@ -502,6 +564,10 @@
   "@deselectAll": {
     "description": "Action to deselect all items"
   },
+  "add": "Add",
+  "@add": {
+    "description": "Generic add action button"
+  },
 
   "genericError": "Something went wrong. Please try again.",
   "@genericError": {
@@ -526,37 +592,6 @@
   "requiredField": "This field is required",
   "@requiredField": {
     "description": "Validation message for empty required fields"
-  },
-
-  "syncing": "Syncing...",
-  "@syncing": {
-    "description": "Status when data is being synced"
-  },
-  "synced": "Synced",
-  "@synced": {
-    "description": "Status when data is fully synced"
-  },
-  "syncFailed": "Sync failed",
-  "@syncFailed": {
-    "description": "Status when sync failed"
-  },
-  "pendingSync": "Pending sync",
-  "@pendingSync": {
-    "description": "Status when changes are waiting to sync"
-  },
-  "lastSynced": "Last synced: {time}",
-  "@lastSynced": {
-    "description": "Shows when the last successful sync occurred",
-    "placeholders": {
-      "time": {
-        "type": "String",
-        "example": "2 minutes ago"
-      }
-    }
-  },
-  "conflictDetected": "Conflict detected",
-  "@conflictDetected": {
-    "description": "Status when a sync conflict is found"
   },
 
   "confirmDelete": "Confirm Deletion",
@@ -845,18 +880,6 @@
   "@authPasswordResetSuccess": {
     "description": "Success message after password reset"
   },
-  "authChooseStorageMode": "Choose where to store your data. You can change this later in Settings.",
-  "@authChooseStorageMode": {
-    "description": "Instructions on storage mode selection screen"
-  },
-  "authCloudDescription": "Sync across devices. Encrypted backup in the cloud.",
-  "@authCloudDescription": {
-    "description": "Description for cloud + device storage mode"
-  },
-  "authDeviceOnlyDescription": "Data stays on this device only. No cloud sync.",
-  "@authDeviceOnlyDescription": {
-    "description": "Description for device-only storage mode"
-  },
   "authSecureYourApp": "Secure Your App",
   "@authSecureYourApp": {
     "description": "Title for app lock prompt screen"
@@ -942,6 +965,10 @@
   "@receiptSaved": {
     "description": "Snackbar message when a receipt is successfully saved"
   },
+  "receiptUpdated": "Receipt updated",
+  "@receiptUpdated": {
+    "description": "Snackbar message when a receipt is successfully updated"
+  },
   "continueToOcr": "Continue to OCR",
   "@continueToOcr": {
     "description": "Button to proceed to OCR text extraction"
@@ -953,6 +980,22 @@
   "manageCategories": "Manage Categories",
   "@manageCategories": {
     "description": "Settings option to manage receipt categories"
+  },
+  "addCategory": "Add Category",
+  "@addCategory": {
+    "description": "Title for the add category dialog"
+  },
+  "categoryName": "Category name",
+  "@categoryName": {
+    "description": "Hint text in the add category dialog"
+  },
+  "defaultCategory": "Default",
+  "@defaultCategory": {
+    "description": "Subtitle for default categories"
+  },
+  "noCategories": "No categories",
+  "@noCategories": {
+    "description": "Empty state when no categories exist"
   },
   "trash": "Trash",
   "@trash": {
@@ -1056,5 +1099,167 @@
   "allDates": "All Dates",
   "@allDates": {
     "description": "Label when no date range filter is applied"
+  },
+
+  "ocrConfidence": "OCR confidence: {percent}%",
+  "@ocrConfidence": {
+    "description": "OCR confidence percentage display",
+    "placeholders": {
+      "percent": {
+        "type": "String",
+        "example": "85"
+      }
+    }
+  },
+  "deleteReceipt": "Delete Receipt",
+  "@deleteReceipt": {
+    "description": "Title for delete receipt dialog"
+  },
+  "deleteReceiptConfirm": "Are you sure you want to delete \"{name}\"? It can be recovered within 30 days.",
+  "@deleteReceiptConfirm": {
+    "description": "Confirmation message for deleting a receipt",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Store Name"
+      }
+    }
+  },
+  "markReturnedConfirm": "Mark \"{name}\" as returned?",
+  "@markReturnedConfirm": {
+    "description": "Confirmation message for marking receipt as returned",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Store Name"
+      }
+    }
+  },
+  "failedToShare": "Failed to share: {error}",
+  "@failedToShare": {
+    "description": "Error message when sharing fails",
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "example": "File not found"
+      }
+    }
+  },
+  "crop": "Crop",
+  "@crop": {
+    "description": "Tooltip for crop action"
+  },
+  "imagePreview": "Image Preview",
+  "@imagePreview": {
+    "description": "Title for image preview screen"
+  },
+  "deleteImage": "Delete Image",
+  "@deleteImage": {
+    "description": "Title for delete image dialog"
+  },
+  "deleteImageConfirm": "Are you sure you want to delete this image? This action cannot be undone.",
+  "@deleteImageConfirm": {
+    "description": "Confirmation message for deleting an image"
+  },
+  "validationImagesRequired": "At least one image is required",
+  "@validationImagesRequired": {
+    "description": "Validation error when no images are provided"
+  },
+
+  "permissionCameraTitle": "Camera Permission Required",
+  "@permissionCameraTitle": {
+    "description": "Title when camera permission is denied"
+  },
+  "permissionCameraMessage": "Warranty Vault needs camera access to capture receipt photos. Please grant permission in your device settings.",
+  "@permissionCameraMessage": {
+    "description": "Message explaining why camera permission is needed"
+  },
+  "permissionGalleryTitle": "Gallery Permission Required",
+  "@permissionGalleryTitle": {
+    "description": "Title when gallery permission is denied"
+  },
+  "permissionGalleryMessage": "Warranty Vault needs photo access to import receipt images. Please grant permission in your device settings.",
+  "@permissionGalleryMessage": {
+    "description": "Message explaining why gallery permission is needed"
+  },
+  "openSettings": "Open Settings",
+  "@openSettings": {
+    "description": "Button to open device app settings"
+  },
+  "tryAgain": "Try Again",
+  "@tryAgain": {
+    "description": "Button to retry an action after permission denial"
+  },
+
+  "ocrLowConfidenceTitle": "Low Recognition Quality",
+  "@ocrLowConfidenceTitle": {
+    "description": "Title for OCR low confidence banner"
+  },
+  "ocrLowConfidenceMessage": "We couldn't read this receipt clearly. Try adding a better photo or fill in the details manually.",
+  "@ocrLowConfidenceMessage": {
+    "description": "Message for OCR low confidence banner"
+  },
+  "addBetterPhoto": "Add Better Photo",
+  "@addBetterPhoto": {
+    "description": "Button to add a better quality photo for OCR"
+  },
+  "fillManually": "Fill Manually",
+  "@fillManually": {
+    "description": "Button to dismiss OCR banner and fill fields manually"
+  },
+
+  "privacyPolicyContent": "Privacy Policy\n\nLast updated: February 2026\n\n1. Data Storage\nAll your data is stored exclusively on your device. Warranty Vault does not transmit, collect, or store any of your information on external servers.\n\n2. Encryption\nYour data is protected with AES-256 encryption (via SQLCipher). Even if someone gains access to your device files, your receipt data remains encrypted.\n\n3. Permissions\nWarranty Vault requests the following permissions:\n- Camera: To capture receipt photos\n- Photo Library: To import receipt images from your gallery\n- Notifications: To send warranty expiry reminders\n\nThese permissions are used solely for the stated purposes and can be revoked at any time in your device settings.\n\n4. No Data Collection\nWe do not collect analytics, usage data, crash reports, or any personal information. Your receipts, warranties, and personal data never leave your device.\n\n5. Data Export & Deletion\nYou can export all your data at any time using the export feature. You can delete individual receipts or all data through the app settings.\n\n6. Third-Party Services\nWarranty Vault does not integrate with any third-party analytics, advertising, or data collection services.\n\n7. Contact\nFor questions about this privacy policy, contact us at: privacy@warrantyvault.app",
+  "@privacyPolicyContent": {
+    "description": "Full privacy policy text"
+  },
+
+  "reminderIntervalsTitle": "Reminder Intervals",
+  "@reminderIntervalsTitle": {
+    "description": "Title for reminder intervals dialog"
+  },
+  "reminderIntervalsMessage": "Choose when to be reminded before warranty expiry:",
+  "@reminderIntervalsMessage": {
+    "description": "Subtitle for reminder intervals selection"
+  },
+  "days30Before": "30 days before",
+  "@days30Before": {
+    "description": "Reminder interval option: 30 days"
+  },
+  "days14Before": "14 days before",
+  "@days14Before": {
+    "description": "Reminder interval option: 14 days"
+  },
+  "days7Before": "7 days before",
+  "@days7Before": {
+    "description": "Reminder interval option: 7 days"
+  },
+  "days3Before": "3 days before",
+  "@days3Before": {
+    "description": "Reminder interval option: 3 days"
+  },
+  "days1Before": "1 day before",
+  "@days1Before": {
+    "description": "Reminder interval option: 1 day"
+  },
+  "dayOfExpiry": "Day of expiry",
+  "@dayOfExpiry": {
+    "description": "Reminder interval option: on the day"
+  },
+
+  "appLockPromptTitle": "Secure Your Receipts",
+  "@appLockPromptTitle": {
+    "description": "Title for app lock prompt dialog"
+  },
+  "appLockPromptMessage": "Protect your receipt data with biometric authentication or PIN code. You can always enable this later in Settings.",
+  "@appLockPromptMessage": {
+    "description": "Message for app lock prompt dialog"
+  },
+  "enableNow": "Enable Now",
+  "@enableNow": {
+    "description": "Button to enable app lock immediately"
+  },
+  "maybeLater": "Maybe Later",
+  "@maybeLater": {
+    "description": "Button to dismiss app lock prompt"
   }
 }

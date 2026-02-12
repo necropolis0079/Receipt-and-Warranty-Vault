@@ -35,6 +35,8 @@ class AddReceiptBloc extends Bloc<AddReceiptEvent, AddReceiptState> {
     on<SetWarranty>(_onSetWarranty);
     on<SaveReceipt>(_onSaveReceipt);
     on<FastSave>(_onFastSave);
+    on<AddMoreImages>(_onAddMoreImages);
+    on<RetryOcr>(_onRetryOcr);
     on<ResetForm>(_onResetForm);
   }
 
@@ -48,6 +50,13 @@ class AddReceiptBloc extends Bloc<AddReceiptEvent, AddReceiptState> {
     CaptureFromCamera event,
     Emitter<AddReceiptState> emit,
   ) async {
+    // Check camera permission first.
+    final granted = await _imagePipeline.requestCameraPermission();
+    if (!granted) {
+      emit(const AddReceiptPermissionDenied(PermissionType.camera));
+      return;
+    }
+
     emit(const AddReceiptCapturing());
     try {
       final image = await _imagePipeline.captureFromCamera();
@@ -66,6 +75,13 @@ class AddReceiptBloc extends Bloc<AddReceiptEvent, AddReceiptState> {
     ImportFromGallery event,
     Emitter<AddReceiptState> emit,
   ) async {
+    // Check gallery/storage permission first.
+    final granted = await _imagePipeline.requestStoragePermission();
+    if (!granted) {
+      emit(const AddReceiptPermissionDenied(PermissionType.gallery));
+      return;
+    }
+
     emit(const AddReceiptCapturing());
     try {
       final images = await _imagePipeline.pickFromGallery();
@@ -225,7 +241,7 @@ class AddReceiptBloc extends Bloc<AddReceiptEvent, AddReceiptState> {
     // Validate required fields
     final errors = <String, String>{};
     if (currentState.images.isEmpty) {
-      errors['images'] = 'At least one image is required';
+      errors['images'] = 'validation_images_required';
     }
 
     if (errors.isNotEmpty) {
@@ -270,6 +286,43 @@ class AddReceiptBloc extends Bloc<AddReceiptEvent, AddReceiptState> {
       emit(AddReceiptSaved(receipt.receiptId));
     } catch (e) {
       emit(AddReceiptError(e.toString(), previousState: fieldsState));
+    }
+  }
+
+  Future<void> _onAddMoreImages(
+    AddMoreImages event,
+    Emitter<AddReceiptState> emit,
+  ) async {
+    final currentState = state;
+    if (currentState is! AddReceiptFieldsReady) return;
+
+    final mergedImages = [...currentState.images, ...event.images];
+    emit(currentState.copyWith(images: mergedImages));
+  }
+
+  Future<void> _onRetryOcr(
+    RetryOcr event,
+    Emitter<AddReceiptState> emit,
+  ) async {
+    final currentImages = _currentImages;
+    if (currentImages == null || currentImages.isEmpty) return;
+
+    emit(AddReceiptProcessingOcr(currentImages));
+    try {
+      final imagePaths = currentImages.map((img) => img.localPath).toList();
+      final ocrResult = await _ocrService.recognizeMultipleImages(imagePaths);
+      final parsed = _ocrService.parseRawText(ocrResult.rawText);
+
+      emit(AddReceiptFieldsReady(
+        images: currentImages,
+        storeName: parsed.extractedStoreName,
+        purchaseDate: parsed.extractedDate,
+        totalAmount: parsed.extractedTotal,
+        currency: parsed.extractedCurrency ?? 'EUR',
+        ocrResult: parsed,
+      ));
+    } catch (e) {
+      emit(AddReceiptError(e.toString(), previousState: state));
     }
   }
 

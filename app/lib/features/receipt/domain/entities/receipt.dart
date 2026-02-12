@@ -2,8 +2,6 @@ import 'package:equatable/equatable.dart';
 
 enum ReceiptStatus { active, returned, deleted }
 
-enum SyncStatus { synced, pending, conflict }
-
 class Receipt extends Equatable {
   const Receipt({
     required this.receiptId,
@@ -31,8 +29,6 @@ class Receipt extends Equatable {
     required this.updatedAt,
     this.version = 1,
     this.deletedAt,
-    this.syncStatus = SyncStatus.pending,
-    this.lastSyncedAt,
     this.localImagePaths = const [],
   });
 
@@ -61,8 +57,6 @@ class Receipt extends Equatable {
   final String updatedAt;
   final int version;
   final String? deletedAt;
-  final SyncStatus syncStatus;
-  final String? lastSyncedAt;
   final List<String> localImagePaths;
 
   /// Whether the warranty is currently active (not expired).
@@ -102,8 +96,6 @@ class Receipt extends Equatable {
     String? updatedAt,
     int? version,
     String? deletedAt,
-    SyncStatus? syncStatus,
-    String? lastSyncedAt,
     List<String>? localImagePaths,
   }) {
     return Receipt(
@@ -132,8 +124,6 @@ class Receipt extends Equatable {
       updatedAt: updatedAt ?? this.updatedAt,
       version: version ?? this.version,
       deletedAt: deletedAt ?? this.deletedAt,
-      syncStatus: syncStatus ?? this.syncStatus,
-      lastSyncedAt: lastSyncedAt ?? this.lastSyncedAt,
       localImagePaths: localImagePaths ?? this.localImagePaths,
     );
   }
@@ -165,8 +155,6 @@ class Receipt extends Equatable {
         updatedAt,
         version,
         deletedAt,
-        syncStatus,
-        lastSyncedAt,
         localImagePaths,
       ];
 }

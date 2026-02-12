@@ -641,3 +641,48 @@ Added 3 new l10n keys needed for Feature #18:
 - **All 18 v1 features are now implemented**
 
 ---
+
+## 2026-02-12 — Device Testing Fixes: 5 Critical Bugs
+
+### Context
+Real device testing (Samsung Galaxy) revealed 5 critical issues from the audit. These are quality fixes to existing features, not new features.
+
+### Changes
+
+#### 1. Category Picker in Add Receipt Form
+- **Issue**: No way to select a category when adding/importing a receipt
+- **Fix**: Added `CategoryPickerField` widget to `receipt_field_editors.dart`. Integrated into `_FieldsReadyView` in `add_receipt_screen.dart` — loads visible categories from CategoriesDao on mount.
+- **Files**: `receipt_field_editors.dart`, `add_receipt_screen.dart`
+
+#### 2. Edit Receipt Screen (was stubbed)
+- **Issue**: Edit button on receipt detail showed "not yet implemented" snackbar
+- **Fix**: Created `edit_receipt_screen.dart` — pre-populates all editable fields (store, date, amount, currency, category, warranty, notes). On save, dispatches `VaultReceiptUpdated` event which calls `receiptRepository.updateReceipt()`. Added `VaultReceiptUpdated` event to `vault_event.dart` and handler in `vault_bloc.dart`.
+- **Files**: `edit_receipt_screen.dart` (new), `receipt_detail_screen.dart`, `vault_event.dart`, `vault_bloc.dart`
+
+#### 3. Add Category UI Button
+- **Issue**: Category management screen had no way to create custom categories
+- **Fix**: Added FAB with `+` icon to `category_management_screen.dart`. Tapping opens a dialog with text field for category name. Calls `CategoryManagementCubit.addCategory()` which already existed.
+- **Files**: `category_management_screen.dart`
+
+#### 4. Improved OCR Store Name Extraction
+- **Issue**: Store name regex `^[A-Za-z\u0391-\u03C9\s&.,-]{3,}$` was too strict — only matched purely alphabetic lines, missing store names with numbers or special chars
+- **Fix**: Complete rewrite of store name heuristic. Now skips lines that look like dates, amounts, phone numbers, separators, or keyword lines (TOTAL, VAT, etc). Takes the first line in the top 8 lines that has at least 2 letter characters.
+- **Files**: `hybrid_ocr_service.dart`
+
+#### 5. Improved OCR Total Amount Extraction
+- **Issue**: Total amount was empty in most cases — regex missed many receipt formats
+- **Fix**: Complete rewrite with 3-pass strategy:
+  1. **Keyword pass**: Scan from bottom for lines with TOTAL/ΣΥΝΟΛΟ/GRAND TOTAL keywords
+  2. **Currency symbol pass**: Find largest amount with currency symbol in bottom half
+  3. **Bare amount pass**: Last resort — find bare decimal number at bottom
+  Also added `_detectCurrency()` helper.
+- **Files**: `hybrid_ocr_service.dart`
+
+#### 6. Localization
+- Added `editReceipt` key to EN (`"Edit Receipt"`) and EL (`"Επεξεργασία Απόδειξης"`) ARB files
+
+### Status
+- `flutter analyze`: **0 issues**
+- `flutter test`: **387 passed, 0 failed**
+
+---

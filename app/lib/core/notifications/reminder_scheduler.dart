@@ -1,18 +1,26 @@
+import 'dart:convert';
+
 import '../../features/receipt/domain/entities/receipt.dart';
+import '../database/daos/settings_dao.dart';
 import 'notification_service.dart';
 
 /// Computes and schedules warranty reminders for receipts.
 ///
-/// This is a stateless utility. Given one or more [Receipt] objects it
-/// schedules local notifications at the [defaultIntervals] (7 days before,
-/// 1 day before, and on the expiry day). Reminders that would fire in the
-/// past are silently skipped.
+/// Intervals are configurable via [SettingsDao]. When no custom intervals
+/// have been saved the [defaultIntervals] are used.
 class ReminderScheduler {
   /// Creates a [ReminderScheduler] backed by the given [notificationService].
-  ReminderScheduler({required NotificationService notificationService})
-      : _notificationService = notificationService;
+  ReminderScheduler({
+    required NotificationService notificationService,
+    required SettingsDao settingsDao,
+  })  : _notificationService = notificationService,
+        _settingsDao = settingsDao;
 
   final NotificationService _notificationService;
+  final SettingsDao _settingsDao;
+
+  /// Key used to persist the user-chosen intervals in [SettingsDao].
+  static const String _intervalsKey = 'reminder_intervals';
 
   /// The default reminder intervals (days before expiry).
   ///
@@ -20,6 +28,24 @@ class ReminderScheduler {
   /// * `1` — one day before warranty expires.
   /// * `0` — on the day the warranty expires.
   static const List<int> defaultIntervals = [7, 1, 0];
+
+  /// Returns the currently configured intervals (user-selected or defaults).
+  Future<List<int>> getIntervals() async {
+    final json = await _settingsDao.getValue(_intervalsKey);
+    if (json == null) return defaultIntervals;
+    try {
+      final decoded = jsonDecode(json) as List;
+      return decoded.cast<int>()..sort((a, b) => b.compareTo(a));
+    } catch (_) {
+      return defaultIntervals;
+    }
+  }
+
+  /// Persist user-chosen [intervals] for future scheduling.
+  Future<void> saveIntervals(List<int> intervals) async {
+    final sorted = List<int>.from(intervals)..sort((a, b) => b.compareTo(a));
+    await _settingsDao.setValue(_intervalsKey, jsonEncode(sorted));
+  }
 
   /// Schedule reminders for a single [receipt].
   ///
@@ -45,8 +71,9 @@ class ReminderScheduler {
     await _notificationService.cancelReminder(receipt.receiptId);
 
     final storeName = receipt.displayName;
+    final intervals = await getIntervals();
 
-    for (final daysBefore in defaultIntervals) {
+    for (final daysBefore in intervals) {
       final reminderDate = expiryDate.subtract(Duration(days: daysBefore));
       if (reminderDate.isBefore(now)) continue;
 

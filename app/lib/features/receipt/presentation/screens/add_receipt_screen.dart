@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:get_it/get_it.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
+import '../../../../core/database/app_database.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
 import '../../domain/repositories/receipt_repository.dart';
@@ -15,6 +17,7 @@ import '../bloc/add_receipt_event.dart';
 import '../bloc/add_receipt_state.dart';
 import '../widgets/capture_option_sheet.dart';
 import '../widgets/image_preview_strip.dart';
+import '../widgets/ocr_feedback_banner.dart';
 import '../widgets/ocr_progress_indicator.dart';
 import '../widgets/receipt_field_editors.dart';
 
@@ -125,6 +128,8 @@ class _AddReceiptBody extends StatelessWidget {
   ) {
     return switch (state) {
       AddReceiptInitial() => _InitialView(l10n: l10n),
+      AddReceiptPermissionDenied() =>
+        _PermissionDeniedView(state: state, l10n: l10n),
       AddReceiptCapturing() => const Center(child: CircularProgressIndicator()),
       AddReceiptImagesReady() =>
         _ImagesReadyView(state: state, l10n: l10n),
@@ -328,6 +333,8 @@ class _FieldsReadyViewState extends State<_FieldsReadyView> {
   late final TextEditingController _storeController;
   late final TextEditingController _amountController;
   late final TextEditingController _notesController;
+  List<String> _categoryNames = [];
+  bool _bannerDismissed = false;
 
   @override
   void initState() {
@@ -339,6 +346,20 @@ class _FieldsReadyViewState extends State<_FieldsReadyView> {
     );
     _notesController =
         TextEditingController(text: widget.state.notes ?? '');
+    _loadCategories();
+  }
+
+  Future<void> _loadCategories() async {
+    final dao = GetIt.I<AppDatabase>().categoriesDao;
+    final entries = await dao.getAll();
+    if (mounted) {
+      setState(() {
+        _categoryNames = entries
+            .where((e) => !e.isHidden)
+            .map((e) => e.name)
+            .toList();
+      });
+    }
   }
 
   @override
@@ -369,6 +390,53 @@ class _FieldsReadyViewState extends State<_FieldsReadyView> {
             ),
           ),
 
+          // Validation errors
+          if (widget.state.validationErrors.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.error.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: AppColors.error.withValues(alpha: 0.3),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: widget.state.validationErrors.values
+                      .map((msg) {
+                        final displayMsg =
+                            msg == 'validation_images_required'
+                                ? l10n.validationImagesRequired
+                                : msg;
+                        return Row(
+                          children: [
+                            const Icon(Icons.error_outline,
+                                size: 16, color: AppColors.error),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                displayMsg,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(color: AppColors.error),
+                              ),
+                            ),
+                          ],
+                        );
+                      })
+                      .toList(),
+                ),
+              ),
+            ),
+
           AppSpacing.verticalGapMd,
 
           // OCR confidence indicator
@@ -381,12 +449,37 @@ class _FieldsReadyViewState extends State<_FieldsReadyView> {
                       size: 16, color: AppColors.primaryGreen),
                   const SizedBox(width: 6),
                   Text(
-                    'OCR confidence: ${(widget.state.ocrResult!.confidence * 100).toStringAsFixed(0)}%',
+                    l10n.ocrConfidence((widget.state.ocrResult!.confidence * 100).toStringAsFixed(0)),
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: AppColors.textSecondary,
                         ),
                   ),
                 ],
+              ),
+            ),
+
+          // Low confidence banner
+          if (!_bannerDismissed &&
+              widget.state.ocrResult != null &&
+              widget.state.ocrResult!.confidence < 0.34)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: OcrFeedbackBanner(
+                onAddBetterPhoto: () async {
+                  final option = await CaptureOptionSheet.show(context);
+                  if (option == null || !context.mounted) return;
+                  switch (option) {
+                    case CaptureOption.camera:
+                      bloc.add(const CaptureFromCamera());
+                    case CaptureOption.gallery:
+                      bloc.add(const ImportFromGallery());
+                    case CaptureOption.files:
+                      bloc.add(const ImportFromFiles());
+                  }
+                },
+                onFillManually: () {
+                  setState(() => _bannerDismissed = true);
+                },
               ),
             ),
 
@@ -427,6 +520,14 @@ class _FieldsReadyViewState extends State<_FieldsReadyView> {
           ),
           AppSpacing.verticalGapMd,
 
+          if (_categoryNames.isNotEmpty)
+            CategoryPickerField(
+              value: widget.state.category,
+              categories: _categoryNames,
+              onChanged: (v) => bloc.add(SetCategory(v)),
+            ),
+          if (_categoryNames.isNotEmpty) AppSpacing.verticalGapMd,
+
           WarrantyEditor(
             months: widget.state.warrantyMonths,
             onChanged: (v) => bloc.add(SetWarranty(v)),
@@ -455,6 +556,84 @@ class _FieldsReadyViewState extends State<_FieldsReadyView> {
 
           AppSpacing.verticalGapLg,
         ],
+      ),
+    );
+  }
+}
+
+// =============================================================================
+// Permission denied — explain why and offer settings / retry
+// =============================================================================
+
+class _PermissionDeniedView extends StatelessWidget {
+  const _PermissionDeniedView({required this.state, required this.l10n});
+
+  final AddReceiptPermissionDenied state;
+  final AppLocalizations l10n;
+
+  @override
+  Widget build(BuildContext context) {
+    final isCamera = state.permissionType == PermissionType.camera;
+    final title =
+        isCamera ? l10n.permissionCameraTitle : l10n.permissionGalleryTitle;
+    final message =
+        isCamera ? l10n.permissionCameraMessage : l10n.permissionGalleryMessage;
+    final icon = isCamera ? Icons.camera_alt : Icons.photo_library;
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 64, color: AppColors.textLight),
+            AppSpacing.verticalGapMd,
+            Text(
+              title,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: AppColors.textDark,
+                  ),
+              textAlign: TextAlign.center,
+            ),
+            AppSpacing.verticalGapSm,
+            Text(
+              message,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+              textAlign: TextAlign.center,
+            ),
+            AppSpacing.verticalGapLg,
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: () => openAppSettings(),
+                icon: const Icon(Icons.settings),
+                label: Text(l10n.openSettings),
+              ),
+            ),
+            AppSpacing.verticalGapSm,
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () {
+                  final bloc = context.read<AddReceiptBloc>();
+                  if (isCamera) {
+                    bloc.add(const CaptureFromCamera());
+                  } else {
+                    bloc.add(const ImportFromGallery());
+                  }
+                },
+                icon: const Icon(Icons.refresh),
+                label: Text(l10n.tryAgain),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.primaryGreen,
+                  side: const BorderSide(color: AppColors.primaryGreen),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

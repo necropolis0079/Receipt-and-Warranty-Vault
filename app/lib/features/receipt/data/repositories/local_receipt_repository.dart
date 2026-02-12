@@ -1,5 +1,6 @@
 import '../../../../core/database/daos/receipts_dao.dart';
 import '../../domain/entities/receipt.dart';
+import '../../domain/exceptions/repository_exception.dart';
 import '../../domain/repositories/receipt_repository.dart';
 import '../models/receipt_mapper.dart';
 
@@ -13,44 +14,100 @@ class LocalReceiptRepository implements ReceiptRepository {
 
   @override
   Stream<List<Receipt>> watchUserReceipts(String userId) {
-    return _receiptsDao
-        .watchUserReceipts(userId)
-        .map((entries) => entries.map(ReceiptMapper.toReceipt).toList());
+    try {
+      return _receiptsDao
+          .watchUserReceipts(userId)
+          .map((entries) => entries.map(ReceiptMapper.toReceipt).toList());
+    } catch (e) {
+      throw RepositoryException(
+        message: 'Failed to load receipts.',
+        type: RepositoryErrorType.database,
+        cause: e,
+      );
+    }
   }
 
   @override
   Future<Receipt?> getById(String receiptId) async {
-    final entry = await _receiptsDao.getById(receiptId);
-    return entry == null ? null : ReceiptMapper.toReceipt(entry);
+    try {
+      final entry = await _receiptsDao.getById(receiptId);
+      return entry == null ? null : ReceiptMapper.toReceipt(entry);
+    } catch (e) {
+      throw RepositoryException(
+        message: 'Failed to load receipt.',
+        type: RepositoryErrorType.database,
+        cause: e,
+      );
+    }
   }
 
   @override
   Future<void> saveReceipt(Receipt receipt) async {
-    final companion = ReceiptMapper.toCompanion(receipt);
-    await _receiptsDao.insertReceipt(companion);
+    try {
+      final companion = ReceiptMapper.toCompanion(receipt);
+      await _receiptsDao.insertReceipt(companion);
+    } catch (e) {
+      throw RepositoryException(
+        message: 'Failed to save receipt.',
+        type: RepositoryErrorType.database,
+        cause: e,
+      );
+    }
   }
 
   @override
   Future<void> updateReceipt(Receipt receipt) async {
-    final companion = ReceiptMapper.toCompanion(receipt);
-    await _receiptsDao.updateReceipt(companion);
+    try {
+      final companion = ReceiptMapper.toCompanion(receipt);
+      await _receiptsDao.updateReceipt(companion);
+    } catch (e) {
+      throw RepositoryException(
+        message: 'Failed to update receipt.',
+        type: RepositoryErrorType.database,
+        cause: e,
+      );
+    }
   }
 
   @override
   Future<void> softDelete(String receiptId) async {
-    await _receiptsDao.softDelete(receiptId);
+    try {
+      await _receiptsDao.softDelete(receiptId);
+    } catch (e) {
+      throw RepositoryException(
+        message: 'Failed to delete receipt.',
+        type: RepositoryErrorType.database,
+        cause: e,
+      );
+    }
   }
 
   @override
   Future<void> hardDelete(String receiptId) async {
-    await _receiptsDao.hardDelete(receiptId);
+    try {
+      await _receiptsDao.hardDelete(receiptId);
+    } catch (e) {
+      throw RepositoryException(
+        message: 'Failed to permanently delete receipt.',
+        type: RepositoryErrorType.database,
+        cause: e,
+      );
+    }
   }
 
   @override
   Stream<List<Receipt>> watchByStatus(String userId, ReceiptStatus status) {
-    return _receiptsDao
-        .watchByStatus(userId, status.name)
-        .map((entries) => entries.map(ReceiptMapper.toReceipt).toList());
+    try {
+      return _receiptsDao
+          .watchByStatus(userId, status.name)
+          .map((entries) => entries.map(ReceiptMapper.toReceipt).toList());
+    } catch (e) {
+      throw RepositoryException(
+        message: 'Failed to load receipts by status.',
+        type: RepositoryErrorType.database,
+        cause: e,
+      );
+    }
   }
 
   @override
@@ -58,35 +115,83 @@ class LocalReceiptRepository implements ReceiptRepository {
     String userId,
     int daysAhead,
   ) async {
-    final entries =
-        await _receiptsDao.getExpiringWarranties(userId, daysAhead);
-    return entries.map(ReceiptMapper.toReceipt).toList();
+    try {
+      final entries =
+          await _receiptsDao.getExpiringWarranties(userId, daysAhead);
+      return entries.map(ReceiptMapper.toReceipt).toList();
+    } catch (e) {
+      throw RepositoryException(
+        message: 'Failed to load expiring warranties.',
+        type: RepositoryErrorType.database,
+        cause: e,
+      );
+    }
   }
 
   @override
   Future<List<Receipt>> getExpiredWarranties(String userId) async {
-    final entries = await _receiptsDao.getExpiredWarranties(userId);
-    return entries.map(ReceiptMapper.toReceipt).toList();
+    try {
+      final entries = await _receiptsDao.getExpiredWarranties(userId);
+      return entries.map(ReceiptMapper.toReceipt).toList();
+    } catch (e) {
+      throw RepositoryException(
+        message: 'Failed to load expired warranties.',
+        type: RepositoryErrorType.database,
+        cause: e,
+      );
+    }
   }
 
   @override
   Future<List<Receipt>> search(String userId, String query) async {
-    final entries = await _receiptsDao.search(userId, query);
-    return entries.map(ReceiptMapper.toReceipt).toList();
+    try {
+      final entries = await _receiptsDao.search(userId, query);
+      return entries.map(ReceiptMapper.toReceipt).toList();
+    } catch (e) {
+      throw RepositoryException(
+        message: 'Failed to search receipts.',
+        type: RepositoryErrorType.database,
+        cause: e,
+      );
+    }
   }
 
   @override
   Future<int> countActive(String userId) {
-    return _receiptsDao.countActive(userId);
+    try {
+      return _receiptsDao.countActive(userId);
+    } catch (e) {
+      throw RepositoryException(
+        message: 'Failed to count receipts.',
+        type: RepositoryErrorType.database,
+        cause: e,
+      );
+    }
   }
 
   @override
   Future<void> restoreReceipt(String receiptId) async {
-    await _receiptsDao.restoreReceipt(receiptId);
+    try {
+      await _receiptsDao.restoreReceipt(receiptId);
+    } catch (e) {
+      throw RepositoryException(
+        message: 'Failed to restore receipt.',
+        type: RepositoryErrorType.database,
+        cause: e,
+      );
+    }
   }
 
   @override
   Future<int> purgeOldDeleted(int days) {
-    return _receiptsDao.purgeOldDeleted(days);
+    try {
+      return _receiptsDao.purgeOldDeleted(days);
+    } catch (e) {
+      throw RepositoryException(
+        message: 'Failed to purge old receipts.',
+        type: RepositoryErrorType.database,
+        cause: e,
+      );
+    }
   }
 }

@@ -1,4 +1,6 @@
+import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:warrantyvault/core/database/app_database.dart';
 import 'package:warrantyvault/core/notifications/mock_notification_service.dart';
 import 'package:warrantyvault/core/notifications/reminder_scheduler.dart';
 import 'package:warrantyvault/features/receipt/domain/entities/receipt.dart';
@@ -6,10 +8,19 @@ import 'package:warrantyvault/features/receipt/domain/entities/receipt.dart';
 void main() {
   late MockNotificationService mockService;
   late ReminderScheduler scheduler;
+  late AppDatabase db;
 
   setUp(() {
+    db = AppDatabase.forTesting(NativeDatabase.memory());
     mockService = MockNotificationService();
-    scheduler = ReminderScheduler(notificationService: mockService);
+    scheduler = ReminderScheduler(
+      notificationService: mockService,
+      settingsDao: db.settingsDao,
+    );
+  });
+
+  tearDown(() async {
+    await db.close();
   });
 
   Receipt createReceipt({

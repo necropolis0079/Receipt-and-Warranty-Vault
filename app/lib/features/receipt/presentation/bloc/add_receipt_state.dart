@@ -10,6 +10,18 @@ sealed class AddReceiptState extends Equatable {
   List<Object?> get props => [];
 }
 
+/// The type of permission that was denied.
+enum PermissionType { camera, gallery }
+
+/// A required permission was denied by the user.
+class AddReceiptPermissionDenied extends AddReceiptState {
+  const AddReceiptPermissionDenied(this.permissionType);
+  final PermissionType permissionType;
+
+  @override
+  List<Object?> get props => [permissionType];
+}
+
 /// Initial state — no images captured yet.
 class AddReceiptInitial extends AddReceiptState {
   const AddReceiptInitial();

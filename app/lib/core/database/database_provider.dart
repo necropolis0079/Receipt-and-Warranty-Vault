@@ -51,7 +51,9 @@ class DatabaseProvider {
       final file = File(p.join(dbFolder.path, _dbFileName));
       final key = await _getOrCreateKey();
 
-      return NativeDatabase.createInBackground(
+      // Use NativeDatabase (not createInBackground) because the
+      // open.overrideFor call only applies to the current isolate.
+      return NativeDatabase(
         file,
         setup: (db) {
           db.execute("PRAGMA key = '$key'");

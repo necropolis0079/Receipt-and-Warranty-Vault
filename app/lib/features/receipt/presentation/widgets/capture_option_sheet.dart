@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../../core/constants/app_colors.dart';
 
@@ -23,6 +24,8 @@ class CaptureOptionSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
@@ -39,26 +42,26 @@ class CaptureOptionSheet extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             Text(
-              'Add Receipt',
+              l10n.addReceipt,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 16),
             _OptionTile(
               icon: Icons.camera_alt_outlined,
-              label: 'Take Photo',
-              subtitle: 'Capture receipt with camera',
+              label: l10n.takePhoto,
+              subtitle: l10n.captureWithCamera,
               onTap: () => onSelected(CaptureOption.camera),
             ),
             _OptionTile(
               icon: Icons.photo_library_outlined,
-              label: 'Choose from Gallery',
-              subtitle: 'Select existing photos',
+              label: l10n.chooseFromGallery,
+              subtitle: l10n.selectExistingPhotos,
               onTap: () => onSelected(CaptureOption.gallery),
             ),
             _OptionTile(
               icon: Icons.folder_outlined,
-              label: 'Import Files',
-              subtitle: 'Images or PDF documents',
+              label: l10n.importFiles,
+              subtitle: l10n.imagesOrPdfDocuments,
               onTap: () => onSelected(CaptureOption.files),
             ),
           ],

@@ -72,7 +72,24 @@
       "Bash(do grep -l \"import.*sync_service\\\\|import.*cloud\\\\|import.*SyncService\\\\|import.*CloudSync\" \"$file\")",
       "Bash(dart pub deps:*)",
       "WebFetch(domain:pub.dev)",
-      "Bash(wmic logicaldisk get size,freespace,caption:*)"
+      "Bash(wmic logicaldisk get size,freespace,caption:*)",
+      "Bash(find:*)",
+      "WebFetch(domain:codelabs.developers.google.com)",
+      "WebFetch(domain:docs.page)",
+      "Bash(Select-String -Pattern \"\\\\[E\\\\]|Some tests|failed\")",
+      "Bash(flutter build:*)",
+      "Bash(adb install:*)",
+      "Bash(adb shell:*)",
+      "Bash(adb logcat:*)",
+      "Bash(systeminfo:*)",
+      "Bash(wmic:*)",
+      "Bash(flutter emulators:*)",
+      "Bash(adb:*)",
+      "Bash(flutter config:*)",
+      "Bash(\"C:\\\\Users\\\\necro\\\\AppData\\\\Local\\\\Android\\\\Sdk\\\\emulator\\\\emulator.exe\" -list-avds)",
+      "Bash(\"C:\\\\Users\\\\necro\\\\AppData\\\\Local\\\\Android\\\\Sdk\\\\emulator\\\\emulator.exe\" -avd Medium_Phone_API_36.1 -gpu swiftshader_indirect -no-snapshot)",
+      "Bash(del \"D:\\\\Receipt and Warranty Vault\\\\app\\\\lib\\\\core\\\\database\\\\daos\\\\sync_queue_dao.dart\")",
+      "Bash(del \"D:\\\\Receipt and Warranty Vault\\\\app\\\\lib\\\\core\\\\database\\\\daos\\\\sync_queue_dao.g.dart\")"
     ]
   },
   "hooks": {

@@ -12,6 +12,9 @@ import 'package:warrantyvault/core/security/app_lock_cubit.dart';
 import 'package:warrantyvault/core/security/app_lock_service.dart';
 import 'package:warrantyvault/core/services/home_widget_service.dart';
 import 'package:warrantyvault/core/theme/theme_cubit.dart';
+import 'package:warrantyvault/core/notifications/mock_notification_service.dart';
+import 'package:warrantyvault/core/notifications/notification_service.dart';
+import 'package:warrantyvault/core/notifications/reminder_scheduler.dart';
 import 'package:warrantyvault/features/auth/domain/entities/auth_result.dart';
 import 'package:warrantyvault/features/auth/domain/entities/auth_user.dart';
 import 'package:warrantyvault/features/auth/domain/repositories/auth_repository.dart';
@@ -92,6 +95,15 @@ void main() {
     db = AppDatabase.forTesting(NativeDatabase.memory());
     await db.settingsDao.setValue('bulk_import_shown', 'true');
     getIt.registerSingleton<AppDatabase>(db);
+
+    final mockNotificationService = MockNotificationService();
+    getIt.registerSingleton<NotificationService>(mockNotificationService);
+    getIt.registerSingleton<ReminderScheduler>(
+      ReminderScheduler(
+        notificationService: mockNotificationService,
+        settingsDao: db.settingsDao,
+      ),
+    );
 
     getIt.registerFactoryParam<SearchBloc, String, void>(
       (userId, _) => SearchBloc(

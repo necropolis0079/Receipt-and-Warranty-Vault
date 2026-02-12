@@ -46,3 +46,11 @@ class VaultReceiptStatusChanged extends VaultEvent {
   @override
   List<Object?> get props => [receiptId, status];
 }
+
+class VaultReceiptUpdated extends VaultEvent {
+  const VaultReceiptUpdated(this.receipt);
+  final dynamic receipt;
+
+  @override
+  List<Object?> get props => [receipt];
+}

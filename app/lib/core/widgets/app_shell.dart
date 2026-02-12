@@ -114,6 +114,7 @@ class _AppShellState extends State<AppShell> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return BlocListener<VaultBloc, VaultState>(
       listener: (context, state) => _onVaultStateChanged(state),
       child: Scaffold(
@@ -131,15 +132,15 @@ class _AppShellState extends State<AppShell> {
           selectedFontSize: 12,
           unselectedFontSize: 12,
           items: [
-            const BottomNavigationBarItem(
-              icon: Icon(Icons.receipt_long_outlined),
-              activeIcon: Icon(Icons.receipt_long),
-              label: 'Vault',
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.receipt_long_outlined),
+              activeIcon: const Icon(Icons.receipt_long),
+              label: l10n.navigationVault,
             ),
-            const BottomNavigationBarItem(
-              icon: Icon(Icons.timer_outlined),
-              activeIcon: Icon(Icons.timer),
-              label: 'Expiring',
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.timer_outlined),
+              activeIcon: const Icon(Icons.timer),
+              label: l10n.navigationExpiring,
             ),
             BottomNavigationBarItem(
               icon: Icon(
@@ -152,17 +153,17 @@ class _AppShellState extends State<AppShell> {
                 size: 32,
                 color: _forestGreen,
               ),
-              label: 'Add',
+              label: l10n.navigationAdd,
             ),
-            const BottomNavigationBarItem(
-              icon: Icon(Icons.search_outlined),
-              activeIcon: Icon(Icons.search),
-              label: 'Search',
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.search_outlined),
+              activeIcon: const Icon(Icons.search),
+              label: l10n.navigationSearch,
             ),
-            const BottomNavigationBarItem(
-              icon: Icon(Icons.settings_outlined),
-              activeIcon: Icon(Icons.settings),
-              label: 'Settings',
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.settings_outlined),
+              activeIcon: const Icon(Icons.settings),
+              label: l10n.navigationSettings,
             ),
           ],
         ),

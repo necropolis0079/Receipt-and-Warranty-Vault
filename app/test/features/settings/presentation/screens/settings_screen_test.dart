@@ -9,6 +9,7 @@ import 'package:warrantyvault/core/database/app_database.dart';
 import 'package:warrantyvault/core/l10n/locale_cubit.dart';
 import 'package:warrantyvault/core/notifications/mock_notification_service.dart';
 import 'package:warrantyvault/core/notifications/notification_service.dart';
+import 'package:warrantyvault/core/notifications/reminder_scheduler.dart';
 import 'package:warrantyvault/core/security/app_lock_cubit.dart';
 import 'package:warrantyvault/core/security/app_lock_service.dart';
 import 'package:warrantyvault/core/theme/theme_cubit.dart';
@@ -89,6 +90,12 @@ void main() {
     // Register in GetIt for SettingsScreen's direct GetIt.I<AppDatabase>() calls
     getIt.registerSingleton<AppDatabase>(db);
     getIt.registerSingleton<NotificationService>(mockNotificationService);
+    getIt.registerSingleton<ReminderScheduler>(
+      ReminderScheduler(
+        notificationService: mockNotificationService,
+        settingsDao: db.settingsDao,
+      ),
+    );
   });
 
   tearDown(() async {

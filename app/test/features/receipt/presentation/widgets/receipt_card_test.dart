@@ -27,7 +27,6 @@ void main() {
       warrantyExpiryDate: warrantyExpiryDate,
       isFavorite: isFavorite,
       status: ReceiptStatus.active,
-      syncStatus: SyncStatus.pending,
       createdAt: '2026-02-09T10:00:00.000Z',
       updatedAt: '2026-02-09T10:00:00.000Z',
     );

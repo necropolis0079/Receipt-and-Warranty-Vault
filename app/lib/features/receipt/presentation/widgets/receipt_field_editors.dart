@@ -146,6 +146,37 @@ class WarrantyEditor extends StatelessWidget {
   }
 }
 
+class CategoryPickerField extends StatelessWidget {
+  const CategoryPickerField({
+    super.key,
+    required this.value,
+    required this.categories,
+    required this.onChanged,
+  });
+
+  final String? value;
+  final List<String> categories;
+  final ValueChanged<String> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return DropdownButtonFormField<String>(
+      value: value != null && categories.contains(value) ? value : null,
+      decoration: const InputDecoration(
+        labelText: 'Category',
+        prefixIcon: Icon(Icons.category_outlined),
+      ),
+      hint: const Text('Select category'),
+      items: categories
+          .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+          .toList(),
+      onChanged: (v) {
+        if (v != null) onChanged(v);
+      },
+    );
+  }
+}
+
 class NotesField extends StatelessWidget {
   const NotesField({super.key, required this.controller, this.onChanged});
 

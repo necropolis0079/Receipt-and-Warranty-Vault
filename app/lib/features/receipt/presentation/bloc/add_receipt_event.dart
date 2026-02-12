@@ -102,6 +102,20 @@ class FastSave extends AddReceiptEvent {
   List<Object?> get props => [userId];
 }
 
+/// Append additional images to the current fields-ready state.
+class AddMoreImages extends AddReceiptEvent {
+  const AddMoreImages(this.images);
+  final List<ImageData> images;
+
+  @override
+  List<Object?> get props => [images];
+}
+
+/// Re-run OCR on the current image set.
+class RetryOcr extends AddReceiptEvent {
+  const RetryOcr();
+}
+
 /// Reset the form to its initial state.
 class ResetForm extends AddReceiptEvent {
   const ResetForm();

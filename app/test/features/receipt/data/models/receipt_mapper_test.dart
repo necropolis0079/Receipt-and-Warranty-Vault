@@ -34,8 +34,6 @@ void main() {
       String updatedAt = '2026-01-15T12:00:00.000Z',
       int version = 1,
       String? deletedAt,
-      String syncStatus = 'pending',
-      String? lastSyncedAt,
       String? localImagePaths,
     }) {
       return ReceiptEntry(
@@ -60,12 +58,11 @@ void main() {
         userTags: userTags,
         isFavorite: isFavorite,
         userEditedFields: userEditedFields,
+        syncStatus: 'pending', // Unused — column retained for DB migration safety
         createdAt: createdAt,
         updatedAt: updatedAt,
         version: version,
         deletedAt: deletedAt,
-        syncStatus: syncStatus,
-        lastSyncedAt: lastSyncedAt,
         localImagePaths: localImagePaths,
       );
     }
@@ -97,8 +94,6 @@ void main() {
       String updatedAt = '2026-01-15T12:00:00.000Z',
       int version = 1,
       String? deletedAt,
-      SyncStatus syncStatus = SyncStatus.pending,
-      String? lastSyncedAt,
       List<String> localImagePaths = const ['/local/img1.jpg'],
     }) {
       return Receipt(
@@ -127,8 +122,6 @@ void main() {
         updatedAt: updatedAt,
         version: version,
         deletedAt: deletedAt,
-        syncStatus: syncStatus,
-        lastSyncedAt: lastSyncedAt,
         localImagePaths: localImagePaths,
       );
     }
@@ -158,7 +151,6 @@ void main() {
         expect(receipt.updatedAt, '2026-01-15T12:00:00.000Z');
         expect(receipt.version, 1);
         expect(receipt.deletedAt, isNull);
-        expect(receipt.lastSyncedAt, isNull);
       });
 
       test('decodes JSON list fields (imageKeys, userTags, localImagePaths, userEditedFields)',
@@ -215,34 +207,23 @@ void main() {
       });
 
       test('parses status enums correctly', () {
-        final activeEntry = createEntry(status: 'active', syncStatus: 'synced');
+        final activeEntry = createEntry(status: 'active');
         final activeReceipt = ReceiptMapper.toReceipt(activeEntry);
         expect(activeReceipt.status, ReceiptStatus.active);
-        expect(activeReceipt.syncStatus, SyncStatus.synced);
 
-        final returnedEntry =
-            createEntry(status: 'returned', syncStatus: 'pending');
+        final returnedEntry = createEntry(status: 'returned');
         final returnedReceipt = ReceiptMapper.toReceipt(returnedEntry);
         expect(returnedReceipt.status, ReceiptStatus.returned);
-        expect(returnedReceipt.syncStatus, SyncStatus.pending);
 
-        final deletedEntry =
-            createEntry(status: 'deleted', syncStatus: 'conflict');
+        final deletedEntry = createEntry(status: 'deleted');
         final deletedReceipt = ReceiptMapper.toReceipt(deletedEntry);
         expect(deletedReceipt.status, ReceiptStatus.deleted);
-        expect(deletedReceipt.syncStatus, SyncStatus.conflict);
       });
 
       test('defaults status when value is invalid', () {
-        final entry = createEntry(
-          status: 'unknown_status',
-          syncStatus: 'invalid_sync',
-        );
-
+        final entry = createEntry(status: 'unknown_status');
         final receipt = ReceiptMapper.toReceipt(entry);
-
         expect(receipt.status, ReceiptStatus.active);
-        expect(receipt.syncStatus, SyncStatus.pending);
       });
     });
 
@@ -271,7 +252,6 @@ void main() {
         expect(companion.createdAt.value, '2026-01-15T10:00:00.000Z');
         expect(companion.updatedAt.value, '2026-01-15T12:00:00.000Z');
         expect(companion.version.value, 1);
-        expect(companion.syncStatus.value, 'pending');
       });
 
       test('encodes list fields as JSON strings', () {
@@ -307,7 +287,6 @@ void main() {
           ocrRawText: null,
           userNotes: null,
           deletedAt: null,
-          lastSyncedAt: null,
         );
 
         final companion = ReceiptMapper.toCompanion(receipt);
@@ -323,7 +302,6 @@ void main() {
         expect(companion.ocrRawText.value, isNull);
         expect(companion.userNotes.value, isNull);
         expect(companion.deletedAt.value, isNull);
-        expect(companion.lastSyncedAt.value, isNull);
       });
 
       test('encodes empty lists as null', () {
@@ -345,21 +323,13 @@ void main() {
       });
 
       test('encodes status enums as their name strings', () {
-        final activeReceipt = createReceipt(
-          status: ReceiptStatus.active,
-          syncStatus: SyncStatus.synced,
-        );
+        final activeReceipt = createReceipt(status: ReceiptStatus.active);
         final companion = ReceiptMapper.toCompanion(activeReceipt);
         expect(companion.status.value, 'active');
-        expect(companion.syncStatus.value, 'synced');
 
-        final returnedReceipt = createReceipt(
-          status: ReceiptStatus.returned,
-          syncStatus: SyncStatus.conflict,
-        );
+        final returnedReceipt = createReceipt(status: ReceiptStatus.returned);
         final companion2 = ReceiptMapper.toCompanion(returnedReceipt);
         expect(companion2.status.value, 'returned');
-        expect(companion2.syncStatus.value, 'conflict');
       });
     });
 
@@ -392,8 +362,6 @@ void main() {
           updatedAt: '2026-03-01T09:30:00.000Z',
           version: 3,
           deletedAt: null,
-          syncStatus: SyncStatus.synced,
-          lastSyncedAt: '2026-03-01T09:30:00.000Z',
           localImagePaths: ['/local/rt1.jpg', '/local/rt2.jpg'],
         );
 
@@ -423,12 +391,11 @@ void main() {
           userTags: companion.userTags.value,
           isFavorite: companion.isFavorite.value,
           userEditedFields: companion.userEditedFields.value,
+          syncStatus: 'pending', // Unused — column retained for DB migration safety
           createdAt: companion.createdAt.value,
           updatedAt: companion.updatedAt.value,
           version: companion.version.value,
           deletedAt: companion.deletedAt.value,
-          syncStatus: companion.syncStatus.value,
-          lastSyncedAt: companion.lastSyncedAt.value,
           localImagePaths: companion.localImagePaths.value,
         );
 
@@ -460,8 +427,6 @@ void main() {
         expect(roundTripped.updatedAt, original.updatedAt);
         expect(roundTripped.version, original.version);
         expect(roundTripped.deletedAt, original.deletedAt);
-        expect(roundTripped.syncStatus, original.syncStatus);
-        expect(roundTripped.lastSyncedAt, original.lastSyncedAt);
         expect(roundTripped.localImagePaths, original.localImagePaths);
 
         // Equatable comparison should also pass.

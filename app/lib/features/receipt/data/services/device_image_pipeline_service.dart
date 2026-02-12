@@ -44,7 +44,7 @@ class DeviceImagePipelineService implements ImagePipelineService {
   Future<List<ImageData>> pickFromFiles() async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['jpg', 'jpeg', 'png', 'heic', 'pdf'],
+      allowedExtensions: ['jpg', 'jpeg', 'png', 'heic'],
       allowMultiple: true,
     );
     if (result == null) return [];
@@ -168,7 +168,6 @@ class DeviceImagePipelineService implements ImagePipelineService {
       '.jpg' || '.jpeg' => 'image/jpeg',
       '.png' => 'image/png',
       '.heic' => 'image/heic',
-      '.pdf' => 'application/pdf',
       _ => 'image/jpeg',
     };
     return ImageData(

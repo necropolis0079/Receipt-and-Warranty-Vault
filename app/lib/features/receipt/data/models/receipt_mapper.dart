@@ -40,8 +40,6 @@ class ReceiptMapper {
       updatedAt: entry.updatedAt,
       version: entry.version,
       deletedAt: entry.deletedAt,
-      syncStatus: _parseSyncStatus(entry.syncStatus),
-      lastSyncedAt: entry.lastSyncedAt,
       localImagePaths: _decodeJsonList(entry.localImagePaths),
     );
   }
@@ -74,8 +72,6 @@ class ReceiptMapper {
       updatedAt: Value(receipt.updatedAt),
       version: Value(receipt.version),
       deletedAt: Value(receipt.deletedAt),
-      syncStatus: Value(receipt.syncStatus.name),
-      lastSyncedAt: Value(receipt.lastSyncedAt),
       localImagePaths: Value(_encodeJsonList(receipt.localImagePaths)),
     );
   }
@@ -84,13 +80,6 @@ class ReceiptMapper {
     return ReceiptStatus.values.firstWhere(
       (e) => e.name == status,
       orElse: () => ReceiptStatus.active,
-    );
-  }
-
-  static SyncStatus _parseSyncStatus(String status) {
-    return SyncStatus.values.firstWhere(
-      (e) => e.name == status,
-      orElse: () => SyncStatus.pending,
     );
   }
 

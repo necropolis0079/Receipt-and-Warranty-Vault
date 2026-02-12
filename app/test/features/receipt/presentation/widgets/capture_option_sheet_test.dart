@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:warrantyvault/features/receipt/presentation/widgets/capture_option_sheet.dart';
 
@@ -7,6 +8,9 @@ void main() {
 
   Widget buildSheet() {
     return MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      locale: const Locale('en'),
       home: Scaffold(
         body: CaptureOptionSheet(
           onSelected: (option) => selectedOption = option,
@@ -19,9 +23,14 @@ void main() {
     selectedOption = null;
   });
 
+  Future<void> pumpSheet(WidgetTester tester) async {
+    await tester.pumpWidget(buildSheet());
+    await tester.pump(); // Allow l10n delegates to resolve
+  }
+
   group('CaptureOptionSheet', () {
     testWidgets('renders all three capture options', (tester) async {
-      await tester.pumpWidget(buildSheet());
+      await pumpSheet(tester);
 
       expect(find.text('Take Photo'), findsOneWidget);
       expect(find.text('Choose from Gallery'), findsOneWidget);
@@ -29,7 +38,7 @@ void main() {
     });
 
     testWidgets('shows Take Photo option', (tester) async {
-      await tester.pumpWidget(buildSheet());
+      await pumpSheet(tester);
 
       expect(find.text('Take Photo'), findsOneWidget);
       expect(find.text('Capture receipt with camera'), findsOneWidget);
@@ -37,7 +46,7 @@ void main() {
     });
 
     testWidgets('shows Choose from Gallery option', (tester) async {
-      await tester.pumpWidget(buildSheet());
+      await pumpSheet(tester);
 
       expect(find.text('Choose from Gallery'), findsOneWidget);
       expect(find.text('Select existing photos'), findsOneWidget);
@@ -45,7 +54,7 @@ void main() {
     });
 
     testWidgets('shows Import Files option', (tester) async {
-      await tester.pumpWidget(buildSheet());
+      await pumpSheet(tester);
 
       expect(find.text('Import Files'), findsOneWidget);
       expect(find.text('Images or PDF documents'), findsOneWidget);
@@ -54,7 +63,7 @@ void main() {
 
     testWidgets('calls onSelected with camera when Take Photo tapped',
         (tester) async {
-      await tester.pumpWidget(buildSheet());
+      await pumpSheet(tester);
 
       await tester.tap(find.text('Take Photo'));
       expect(selectedOption, CaptureOption.camera);
@@ -62,7 +71,7 @@ void main() {
 
     testWidgets('calls onSelected with gallery when Gallery tapped',
         (tester) async {
-      await tester.pumpWidget(buildSheet());
+      await pumpSheet(tester);
 
       await tester.tap(find.text('Choose from Gallery'));
       expect(selectedOption, CaptureOption.gallery);
@@ -70,7 +79,7 @@ void main() {
 
     testWidgets('calls onSelected with files when Import tapped',
         (tester) async {
-      await tester.pumpWidget(buildSheet());
+      await pumpSheet(tester);
 
       await tester.tap(find.text('Import Files'));
       expect(selectedOption, CaptureOption.files);

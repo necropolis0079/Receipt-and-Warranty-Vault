@@ -9,6 +9,7 @@ import '../../features/auth/presentation/screens/password_reset_screen.dart';
 import '../../features/auth/presentation/screens/sign_in_screen.dart';
 import '../../features/auth/presentation/screens/sign_up_screen.dart';
 import '../../features/auth/presentation/screens/welcome_screen.dart';
+import '../../features/auth/presentation/widgets/app_lock_prompt_dialog.dart';
 import '../../features/bulk_import/presentation/cubit/bulk_import_cubit.dart';
 import '../../features/bulk_import/presentation/screens/bulk_import_screen.dart';
 import '../../features/receipt/presentation/bloc/trash_cubit.dart';
@@ -98,6 +99,7 @@ class _AuthGateState extends State<AuthGate> {
                             .setValue('bulk_import_shown', 'true');
                         if (mounted) {
                           setState(() => _showBulkImport = false);
+                          _promptAppLockIfNeeded();
                         }
                       },
                     ),
@@ -127,6 +129,35 @@ class _AuthGateState extends State<AuthGate> {
         await getIt<AppDatabase>().settingsDao.getValue('bulk_import_shown');
     if (value == null && mounted) {
       setState(() => _showBulkImport = true);
+    }
+  }
+
+  /// After bulk import, prompt the user to enable app lock if the device
+  /// supports biometrics and the prompt hasn't been shown before.
+  Future<void> _promptAppLockIfNeeded() async {
+    final db = getIt<AppDatabase>();
+    final alreadyPrompted =
+        await db.settingsDao.getValue('app_lock_prompted');
+    if (alreadyPrompted != null) return;
+    if (!mounted) return;
+
+    // Check device support
+    final lockCubit = context.read<AppLockCubit>();
+    await lockCubit.checkDeviceSupport();
+    if (!lockCubit.state.isDeviceSupported) {
+      // Device doesn't support biometrics — skip prompt.
+      await db.settingsDao.setValue('app_lock_prompted', 'true');
+      return;
+    }
+
+    if (!mounted) return;
+    final enableNow = await AppLockPromptDialog.show(context);
+
+    // Record that we've shown the prompt regardless of the choice.
+    await db.settingsDao.setValue('app_lock_prompted', 'true');
+
+    if (enableNow) {
+      await lockCubit.enable();
     }
   }
 

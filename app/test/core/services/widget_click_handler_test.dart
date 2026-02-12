@@ -3,6 +3,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
+
 import 'package:warrantyvault/core/services/widget_click_handler.dart';
 import 'package:warrantyvault/features/receipt/domain/repositories/receipt_repository.dart';
 import 'package:warrantyvault/features/receipt/domain/services/image_pipeline_service.dart';
@@ -20,8 +21,13 @@ void main() {
 
   setUp(() async {
     await getIt.reset();
-    getIt.registerLazySingleton<ImagePipelineService>(
-        () => MockImagePipelineService());
+    final mockPipeline = MockImagePipelineService();
+    // Stub permission checks so AddReceiptScreen's auto-capture doesn't fail.
+    when(() => mockPipeline.requestCameraPermission())
+        .thenAnswer((_) async => true);
+    when(() => mockPipeline.requestStoragePermission())
+        .thenAnswer((_) async => true);
+    getIt.registerLazySingleton<ImagePipelineService>(() => mockPipeline);
     getIt.registerLazySingleton<OcrService>(() => MockOcrService());
     getIt.registerLazySingleton<ReceiptRepository>(
         () => MockReceiptRepository());

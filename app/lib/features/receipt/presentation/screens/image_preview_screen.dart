@@ -1,50 +1,77 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:image_cropper/image_cropper.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../domain/entities/image_data.dart';
 
 /// Full-screen image preview for a single receipt image.
 ///
-/// Shows the image on a dark background with basic action buttons
-/// (crop placeholder and delete) in the app bar.
-class ImagePreviewScreen extends StatelessWidget {
+/// Shows the image on a dark background with crop and delete actions.
+/// Returns via [Navigator.pop]:
+/// - `ImageData` if the image was cropped (caller should replace the image).
+/// - `true` if the user confirmed deletion (caller should remove the image).
+/// - `null` if dismissed without changes.
+class ImagePreviewScreen extends StatefulWidget {
   const ImagePreviewScreen({super.key, required this.image});
 
   final ImageData image;
 
-  void _onCrop(BuildContext context) {
-    // TODO: Integrate image_cropper for crop/rotate functionality.
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Crop is not yet implemented.')),
-    );
+  @override
+  State<ImagePreviewScreen> createState() => _ImagePreviewScreenState();
+}
+
+class _ImagePreviewScreenState extends State<ImagePreviewScreen> {
+  late ImageData _currentImage;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentImage = widget.image;
   }
 
-  void _onDelete(BuildContext context) {
+  Future<void> _onCrop() async {
+    final croppedFile = await ImageCropper().cropImage(
+      sourcePath: _currentImage.localPath,
+      compressQuality: 90,
+    );
+    if (croppedFile == null || !mounted) return;
+
+    final file = File(croppedFile.path);
+    final bytes = await file.length();
+    final updated = _currentImage.copyWith(
+      localPath: croppedFile.path,
+      sizeBytes: bytes,
+    );
+
+    setState(() {
+      _currentImage = updated;
+    });
+  }
+
+  void _onDelete() {
+    final l10n = AppLocalizations.of(context);
     showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Delete Image'),
-        content: const Text(
-          'Are you sure you want to delete this image? '
-          'This action cannot be undone.',
-        ),
+        title: Text(l10n.deleteImage),
+        content: Text(l10n.deleteImageConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
             style: TextButton.styleFrom(foregroundColor: AppColors.error),
-            child: const Text('Delete'),
+            child: Text(l10n.delete),
           ),
         ],
       ),
     ).then((confirmed) {
-      if (confirmed == true && context.mounted) {
-        // TODO: Dispatch image deletion event to the appropriate bloc.
+      if (confirmed == true && mounted) {
         Navigator.of(context).pop(true);
       }
     });
@@ -52,41 +79,51 @@ class ImagePreviewScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final file = File(image.localPath);
+    final file = File(_currentImage.localPath);
     final fileExists = file.existsSync();
 
-    return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        title: const Text('Image Preview'),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        // Return the (possibly cropped) image if it changed, null otherwise.
+        final result = _currentImage != widget.image ? _currentImage : null;
+        Navigator.of(context).pop(result);
+      },
+      child: Scaffold(
         backgroundColor: Colors.black,
-        foregroundColor: AppColors.white,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.crop),
-            tooltip: 'Crop',
-            onPressed: () => _onCrop(context),
-          ),
-          IconButton(
-            icon: const Icon(Icons.delete_outline),
-            tooltip: 'Delete',
-            onPressed: () => _onDelete(context),
-          ),
-        ],
-      ),
-      body: Center(
-        child: fileExists
-            ? InteractiveViewer(
-                minScale: 0.5,
-                maxScale: 4.0,
-                child: Image.file(
-                  file,
-                  fit: BoxFit.contain,
-                  errorBuilder: (_, __, ___) => const _ImageErrorPlaceholder(),
-                ),
-              )
-            : const _ImageErrorPlaceholder(),
+        appBar: AppBar(
+          title: Text(AppLocalizations.of(context).imagePreview),
+          backgroundColor: Colors.black,
+          foregroundColor: AppColors.white,
+          elevation: 0,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.crop),
+              tooltip: AppLocalizations.of(context).crop,
+              onPressed: _onCrop,
+            ),
+            IconButton(
+              icon: const Icon(Icons.delete_outline),
+              tooltip: AppLocalizations.of(context).delete,
+              onPressed: _onDelete,
+            ),
+          ],
+        ),
+        body: Center(
+          child: fileExists
+              ? InteractiveViewer(
+                  minScale: 0.5,
+                  maxScale: 4.0,
+                  child: Image.file(
+                    file,
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, __, ___) =>
+                        const _ImageErrorPlaceholder(),
+                  ),
+                )
+              : const _ImageErrorPlaceholder(),
+        ),
       ),
     );
   }
@@ -98,18 +135,18 @@ class _ImageErrorPlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
+    return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(
+        const Icon(
           Icons.broken_image_outlined,
           size: 64,
           color: AppColors.textLight,
         ),
-        SizedBox(height: 16),
+        const SizedBox(height: 16),
         Text(
-          'Image not available',
-          style: TextStyle(
+          AppLocalizations.of(context).imageNotAvailable,
+          style: const TextStyle(
             color: AppColors.textLight,
             fontSize: 16,
           ),

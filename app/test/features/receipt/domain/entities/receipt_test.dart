@@ -32,7 +32,6 @@ void main() {
       expect(receipt.storeName, 'Test Store');
       expect(receipt.currency, 'EUR');
       expect(receipt.status, ReceiptStatus.active);
-      expect(receipt.syncStatus, SyncStatus.pending);
       expect(receipt.version, 1);
     });
 
@@ -105,12 +104,4 @@ void main() {
     });
   });
 
-  group('SyncStatus', () {
-    test('has all expected values', () {
-      expect(SyncStatus.values.length, 3);
-      expect(SyncStatus.values, contains(SyncStatus.synced));
-      expect(SyncStatus.values, contains(SyncStatus.pending));
-      expect(SyncStatus.values, contains(SyncStatus.conflict));
-    });
-  });
 }

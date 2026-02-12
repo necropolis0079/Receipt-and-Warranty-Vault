@@ -5,6 +5,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:get_it/get_it.dart';
 
 import '../../../../core/database/app_database.dart';
+import '../../../../core/notifications/reminder_scheduler.dart';
 import '../../../../core/l10n/locale_cubit.dart';
 import '../../../../core/l10n/locale_state.dart';
 import '../../../../core/l10n/supported_locales.dart';
@@ -21,6 +22,7 @@ import '../../../bulk_import/presentation/screens/bulk_import_screen.dart';
 import '../../../receipt/presentation/screens/category_management_screen.dart';
 import '../../../receipt/presentation/screens/trash_screen.dart';
 import 'batch_export_screen.dart';
+import 'privacy_policy_screen.dart';
 
 /// Settings screen with live App Lock toggle and Sign Out action.
 class SettingsScreen extends StatelessWidget {
@@ -156,6 +158,17 @@ class SettingsScreen extends StatelessWidget {
             icon: Icons.info_outline,
             title: l10n.about,
             onTap: () => _showAboutInfo(context),
+          ),
+          _SettingsTile(
+            icon: Icons.privacy_tip_outlined,
+            title: l10n.privacyPolicy,
+            onTap: () {
+              Navigator.of(context).push<void>(
+                MaterialPageRoute(
+                  builder: (_) => const PrivacyPolicyScreen(),
+                ),
+              );
+            },
           ),
           const Divider(),
 
@@ -307,20 +320,41 @@ class _ReminderTile extends StatefulWidget {
 
 class _ReminderTileState extends State<_ReminderTile> {
   bool _enabled = true; // default: enabled
+  List<int> _selectedIntervals = ReminderScheduler.defaultIntervals;
+
+  /// Maps day values to their l10n label getter.
+  static const List<int> _allIntervalOptions = [30, 14, 7, 3, 1, 0];
 
   @override
   void initState() {
     super.initState();
-    _loadSetting();
+    _loadSettings();
   }
 
-  Future<void> _loadSetting() async {
+  Future<void> _loadSettings() async {
     if (!GetIt.I.isRegistered<AppDatabase>()) return;
     final value =
         await GetIt.I<AppDatabase>().settingsDao.getValue('reminders_enabled');
-    if (mounted && value != null) {
-      setState(() => _enabled = value != 'false');
+    final scheduler = GetIt.I<ReminderScheduler>();
+    final intervals = await scheduler.getIntervals();
+    if (mounted) {
+      setState(() {
+        _enabled = value == null || value != 'false';
+        _selectedIntervals = intervals;
+      });
     }
+  }
+
+  String _intervalLabel(int days, AppLocalizations l10n) {
+    return switch (days) {
+      30 => l10n.days30Before,
+      14 => l10n.days14Before,
+      7 => l10n.days7Before,
+      3 => l10n.days3Before,
+      1 => l10n.days1Before,
+      0 => l10n.dayOfExpiry,
+      _ => '$days',
+    };
   }
 
   @override
@@ -338,6 +372,11 @@ class _ReminderTileState extends State<_ReminderTile> {
     final l10n = AppLocalizations.of(context);
     final settingsDao = GetIt.I<AppDatabase>().settingsDao;
     final notificationService = GetIt.I<NotificationService>();
+    final scheduler = GetIt.I<ReminderScheduler>();
+
+    // Work with a local copy so we can revert on cancel if needed.
+    var dialogEnabled = _enabled;
+    var dialogIntervals = List<int>.from(_selectedIntervals);
 
     showDialog<void>(
       context: context,
@@ -347,13 +386,14 @@ class _ReminderTileState extends State<_ReminderTile> {
             title: Text(l10n.reminderSettings),
             content: Column(
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SwitchListTile(
                   title: Text(l10n.warrantyReminders),
-                  value: _enabled,
+                  value: dialogEnabled,
                   onChanged: (value) async {
-                    setDialogState(() => _enabled = value);
-                    setState(() {});
+                    setDialogState(() => dialogEnabled = value);
+                    setState(() => _enabled = value);
                     await settingsDao.setValue(
                       'reminders_enabled',
                       value.toString(),
@@ -363,19 +403,45 @@ class _ReminderTileState extends State<_ReminderTile> {
                     }
                   },
                 ),
-                if (_enabled)
+                if (dialogEnabled) ...[
                   Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
+                    padding: const EdgeInsets.only(
+                        left: 16, right: 16, top: 8, bottom: 4),
                     child: Text(
-                      '${l10n.reminderDaysBefore(7)}\n'
-                      '${l10n.reminderDaysBefore(1)}\n'
-                      '${l10n.expiringToday}',
+                      l10n.reminderIntervalsMessage,
                       style: Theme.of(ctx).textTheme.bodySmall,
                     ),
                   ),
+                  Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    child: Wrap(
+                      spacing: 8,
+                      runSpacing: 4,
+                      children: _allIntervalOptions.map((days) {
+                        final selected = dialogIntervals.contains(days);
+                        return FilterChip(
+                          label: Text(_intervalLabel(days, l10n)),
+                          selected: selected,
+                          onSelected: (isSelected) async {
+                            setDialogState(() {
+                              if (isSelected) {
+                                dialogIntervals.add(days);
+                              } else {
+                                dialogIntervals.remove(days);
+                              }
+                            });
+                            setState(() {
+                              _selectedIntervals =
+                                  List<int>.from(dialogIntervals);
+                            });
+                            await scheduler.saveIntervals(dialogIntervals);
+                          },
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ],
               ],
             ),
             actions: [

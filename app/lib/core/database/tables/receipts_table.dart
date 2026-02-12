@@ -90,12 +90,12 @@ class Receipts extends Table {
   /// ISO 8601 datetime. Set on soft delete.
   TextColumn get deletedAt => text().nullable()();
 
-  // ── Local-only fields (never synced to server) ───────────────────────
-  /// synced | pending | conflict
+  // ── Legacy columns (kept for schema compatibility, unused) ──────────
+  /// Unused — retained to avoid DB migration.
   TextColumn get syncStatus =>
       text().withDefault(const Constant('pending'))();
 
-  /// ISO 8601 datetime of last successful sync for this receipt.
+  /// Unused — retained to avoid DB migration.
   TextColumn get lastSyncedAt => text().nullable()();
 
   /// JSON list of local file paths for cached/captured images.
@@ -123,7 +123,6 @@ class Receipts extends Table {
 /// - idx_receipts_purchase_date    ON receipts(purchase_date)
 /// - idx_receipts_category         ON receipts(category)
 /// - idx_receipts_status           ON receipts(status)
-/// - idx_receipts_sync_status      ON receipts(sync_status)
 /// - idx_receipts_warranty_expiry  ON receipts(warranty_expiry_date)
 /// - idx_receipts_updated_at       ON receipts(updated_at)
 const List<String> receiptsIndexStatements = [
@@ -131,7 +130,6 @@ const List<String> receiptsIndexStatements = [
   'CREATE INDEX IF NOT EXISTS idx_receipts_purchase_date ON receipts(purchase_date)',
   'CREATE INDEX IF NOT EXISTS idx_receipts_category ON receipts(category)',
   'CREATE INDEX IF NOT EXISTS idx_receipts_status ON receipts(status)',
-  'CREATE INDEX IF NOT EXISTS idx_receipts_sync_status ON receipts(sync_status)',
   'CREATE INDEX IF NOT EXISTS idx_receipts_warranty_expiry ON receipts(warranty_expiry_date)',
   'CREATE INDEX IF NOT EXISTS idx_receipts_updated_at ON receipts(updated_at)',
 ];

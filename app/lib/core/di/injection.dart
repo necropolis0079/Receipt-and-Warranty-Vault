@@ -58,10 +58,12 @@ Future<void> configureDependencies() async {
   getIt.registerLazySingleton<GalleryScannerService>(
     () => DeviceGalleryScannerService(),
   );
-  getIt.registerLazySingleton<ReminderScheduler>(
+  getIt.registerSingletonWithDependencies<ReminderScheduler>(
     () => ReminderScheduler(
       notificationService: getIt<NotificationService>(),
+      settingsDao: getIt<AppDatabase>().settingsDao,
     ),
+    dependsOn: [AppDatabase],
   );
 
   // --- Repositories ---

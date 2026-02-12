@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../../core/database/daos/categories_dao.dart';
 import '../bloc/category_cubit.dart';
@@ -27,11 +28,53 @@ class CategoryManagementScreen extends StatelessWidget {
 class _CategoryManagementBody extends StatelessWidget {
   const _CategoryManagementBody();
 
+  void _showAddCategoryDialog(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final controller = TextEditingController();
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.addCategory),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: InputDecoration(
+            hintText: l10n.categoryName,
+          ),
+          textCapitalization: TextCapitalization.words,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () {
+              final name = controller.text.trim();
+              if (name.isNotEmpty) {
+                context
+                    .read<CategoryManagementCubit>()
+                    .addCategory(name);
+                Navigator.of(dialogContext).pop();
+              }
+            },
+            child: Text(l10n.add),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Manage Categories'),
+        title: Text(l10n.manageCategories),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _showAddCategoryDialog(context),
+        child: const Icon(Icons.add),
       ),
       body: BlocBuilder<CategoryManagementCubit, CategoryState>(
         builder: (context, state) {
@@ -42,7 +85,7 @@ class _CategoryManagementBody extends StatelessWidget {
             return Center(child: Text(state.error!));
           }
           if (state.categories.isEmpty) {
-            return const Center(child: Text('No categories'));
+            return Center(child: Text(l10n.noCategories));
           }
           return ListView.builder(
             itemCount: state.categories.length,
@@ -54,7 +97,7 @@ class _CategoryManagementBody extends StatelessWidget {
                     : const Icon(Icons.category),
                 title: Text(category.name),
                 subtitle: category.isDefault
-                    ? const Text('Default')
+                    ? Text(l10n.defaultCategory)
                     : null,
                 trailing: category.isDefault
                     ? null

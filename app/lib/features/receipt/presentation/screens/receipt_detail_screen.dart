@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:get_it/get_it.dart';
 
 import '../../../../core/constants/app_colors.dart';
@@ -11,6 +12,7 @@ import '../../domain/services/export_service.dart';
 import '../bloc/vault_event.dart';
 import '../bloc/vault_bloc.dart';
 import '../widgets/warranty_badge.dart';
+import 'edit_receipt_screen.dart';
 
 /// Read-only detail view for a single receipt.
 ///
@@ -46,11 +48,11 @@ class ReceiptDetailScreen extends StatelessWidget {
   // Status display helpers
   // ---------------------------------------------------------------------------
 
-  static String _statusLabel(ReceiptStatus status) {
+  static String _statusLabel(ReceiptStatus status, AppLocalizations l10n) {
     return switch (status) {
-      ReceiptStatus.active => 'Active',
-      ReceiptStatus.returned => 'Returned',
-      ReceiptStatus.deleted => 'Deleted',
+      ReceiptStatus.active => l10n.statusActive,
+      ReceiptStatus.returned => l10n.statusReturned,
+      ReceiptStatus.deleted => l10n.statusDeleted,
     };
   }
 
@@ -67,23 +69,23 @@ class ReceiptDetailScreen extends StatelessWidget {
   // ---------------------------------------------------------------------------
 
   void _onDelete(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Delete Receipt'),
+        title: Text(l10n.deleteReceipt),
         content: Text(
-          'Are you sure you want to delete "${receipt.displayName}"? '
-          'It can be recovered within 30 days.',
+          l10n.deleteReceiptConfirm(receipt.displayName),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
             style: TextButton.styleFrom(foregroundColor: AppColors.error),
-            child: const Text('Delete'),
+            child: Text(l10n.delete),
           ),
         ],
       ),
@@ -105,21 +107,22 @@ class ReceiptDetailScreen extends StatelessWidget {
   }
 
   void _onMarkAsReturned(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Mark as Returned'),
+        title: Text(l10n.markAsReturned),
         content: Text(
-          'Mark "${receipt.displayName}" as returned?',
+          l10n.markReturnedConfirm(receipt.displayName),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Confirm'),
+            child: Text(l10n.confirm),
           ),
         ],
       ),
@@ -132,16 +135,20 @@ class ReceiptDetailScreen extends StatelessWidget {
               ),
             );
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Receipt marked as returned.')),
+          SnackBar(content: Text(l10n.receiptReturned)),
         );
       }
     });
   }
 
   void _onEdit(BuildContext context) {
-    // TODO: Navigate to receipt edit screen.
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Edit is not yet implemented.')),
+    Navigator.of(context).push<Receipt>(
+      MaterialPageRoute(
+        builder: (_) => BlocProvider.value(
+          value: context.read<VaultBloc>(),
+          child: EditReceiptScreen(receipt: receipt),
+        ),
+      ),
     );
   }
 
@@ -151,8 +158,9 @@ class ReceiptDetailScreen extends StatelessWidget {
       await exportService.shareReceipt(receipt);
     } catch (e) {
       if (context.mounted) {
+        final l10n = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to share: $e')),
+          SnackBar(content: Text(l10n.failedToShare(e.toString()))),
         );
       }
     }
@@ -165,6 +173,7 @@ class ReceiptDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -176,8 +185,8 @@ class ReceiptDetailScreen extends StatelessWidget {
               color: receipt.isFavorite ? AppColors.accentAmber : null,
             ),
             tooltip: receipt.isFavorite
-                ? 'Remove from favorites'
-                : 'Add to favorites',
+                ? l10n.removeFromFavorites
+                : l10n.addToFavorites,
             onPressed: () => _onToggleFavorite(context),
           ),
         ],
@@ -187,7 +196,7 @@ class ReceiptDetailScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // ---- Image gallery ----
-            _ImageGallerySection(localImagePaths: receipt.localImagePaths),
+            _ImageGallerySection(localImagePaths: receipt.localImagePaths, l10n: l10n),
 
             Padding(
               padding: AppSpacing.screenPadding,
@@ -199,28 +208,28 @@ class ReceiptDetailScreen extends StatelessWidget {
                     children: [
                       _FieldRow(
                         icon: Icons.store,
-                        label: 'Store',
+                        label: l10n.store,
                         value: receipt.displayName,
                       ),
                       const Divider(height: 1),
                       _FieldRow(
                         icon: Icons.calendar_today,
-                        label: 'Purchase Date',
-                        value: receipt.purchaseDate ?? 'N/A',
+                        label: l10n.purchaseDate,
+                        value: receipt.purchaseDate ?? l10n.notAvailable,
                       ),
                       const Divider(height: 1),
                       _FieldRow(
                         icon: Icons.attach_money,
-                        label: 'Total',
+                        label: l10n.total,
                         value: receipt.totalAmount != null
                             ? '${receipt.totalAmount!.toStringAsFixed(2)} ${receipt.currency}'
-                            : 'N/A',
+                            : l10n.notAvailable,
                       ),
                       const Divider(height: 1),
                       _FieldRow(
                         icon: _categoryIcon(receipt.category),
-                        label: 'Category',
-                        value: receipt.category ?? 'Uncategorized',
+                        label: l10n.category,
+                        value: receipt.category ?? l10n.uncategorized,
                       ),
                     ],
                   ),
@@ -244,7 +253,7 @@ class ReceiptDetailScreen extends StatelessWidget {
                             ),
                             AppSpacing.horizontalGapSm,
                             Text(
-                              'Warranty',
+                              l10n.warranty,
                               style: theme.textTheme.titleSmall?.copyWith(
                                 color: AppColors.textSecondary,
                               ),
@@ -258,15 +267,15 @@ class ReceiptDetailScreen extends StatelessWidget {
                         const Divider(height: 1),
                         _FieldRow(
                           icon: Icons.timer_outlined,
-                          label: 'Duration',
-                          value: '${receipt.warrantyMonths} months',
+                          label: l10n.duration,
+                          value: l10n.monthsWithCount(receipt.warrantyMonths),
                         ),
                       ],
                       if (receipt.warrantyExpiryDate != null) ...[
                         const Divider(height: 1),
                         _FieldRow(
                           icon: Icons.event,
-                          label: 'Expires',
+                          label: l10n.expires,
                           value: receipt.warrantyExpiryDate!,
                         ),
                       ],
@@ -292,7 +301,7 @@ class ReceiptDetailScreen extends StatelessWidget {
                             ),
                             AppSpacing.horizontalGapSm,
                             Text(
-                              'Status',
+                              l10n.status,
                               style: theme.textTheme.titleSmall?.copyWith(
                                 color: AppColors.textSecondary,
                               ),
@@ -309,7 +318,7 @@ class ReceiptDetailScreen extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
-                                _statusLabel(receipt.status),
+                                _statusLabel(receipt.status, l10n),
                                 style: theme.textTheme.labelSmall?.copyWith(
                                   color: _statusColor(receipt.status),
                                   fontWeight: FontWeight.w600,
@@ -342,7 +351,7 @@ class ReceiptDetailScreen extends StatelessWidget {
                                   ),
                                   AppSpacing.horizontalGapSm,
                                   Text(
-                                    'Notes',
+                                    l10n.notes,
                                     style:
                                         theme.textTheme.titleSmall?.copyWith(
                                       color: AppColors.textSecondary,
@@ -381,7 +390,7 @@ class ReceiptDetailScreen extends StatelessWidget {
                                   ),
                                   AppSpacing.horizontalGapSm,
                                   Text(
-                                    'Tags',
+                                    l10n.tags,
                                     style:
                                         theme.textTheme.titleSmall?.copyWith(
                                       color: AppColors.textSecondary,
@@ -423,6 +432,7 @@ class ReceiptDetailScreen extends StatelessWidget {
 
                   // ---- Action buttons ----
                   _ActionButtonBar(
+                    l10n: l10n,
                     onEdit: () => _onEdit(context),
                     onDelete: () => _onDelete(context),
                     onShare: () => _onShare(context),
@@ -448,9 +458,10 @@ class ReceiptDetailScreen extends StatelessWidget {
 
 /// Horizontal scrollable gallery of receipt images.
 class _ImageGallerySection extends StatelessWidget {
-  const _ImageGallerySection({required this.localImagePaths});
+  const _ImageGallerySection({required this.localImagePaths, required this.l10n});
 
   final List<String> localImagePaths;
+  final AppLocalizations l10n;
 
   @override
   Widget build(BuildContext context) {
@@ -458,16 +469,16 @@ class _ImageGallerySection extends StatelessWidget {
       return Container(
         height: 200,
         color: AppColors.cream,
-        child: const Center(
+        child: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.image_not_supported_outlined,
+              const Icon(Icons.image_not_supported_outlined,
                   size: 48, color: AppColors.textLight),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               Text(
-                'No images',
-                style: TextStyle(color: AppColors.textLight),
+                l10n.noImages,
+                style: const TextStyle(color: AppColors.textLight),
               ),
             ],
           ),
@@ -599,12 +610,14 @@ class _FieldRow extends StatelessWidget {
 /// Row of action buttons at the bottom of the detail screen.
 class _ActionButtonBar extends StatelessWidget {
   const _ActionButtonBar({
+    required this.l10n,
     required this.onEdit,
     required this.onDelete,
     required this.onShare,
     this.onMarkReturned,
   });
 
+  final AppLocalizations l10n;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
   final VoidCallback onShare;
@@ -619,26 +632,26 @@ class _ActionButtonBar extends StatelessWidget {
       children: [
         _ActionButton(
           icon: Icons.edit_outlined,
-          label: 'Edit',
+          label: l10n.edit,
           color: AppColors.primaryGreen,
           onPressed: onEdit,
         ),
         _ActionButton(
           icon: Icons.delete_outline,
-          label: 'Delete',
+          label: l10n.delete,
           color: AppColors.error,
           onPressed: onDelete,
         ),
         _ActionButton(
           icon: Icons.share_outlined,
-          label: 'Share',
+          label: l10n.share,
           color: AppColors.primaryGreen,
           onPressed: onShare,
         ),
         if (onMarkReturned != null)
           _ActionButton(
             icon: Icons.assignment_return_outlined,
-            label: 'Returned',
+            label: l10n.returned,
             color: AppColors.accentAmber,
             onPressed: onMarkReturned!,
           ),
