@@ -686,3 +686,62 @@ Real device testing (Samsung Galaxy) revealed 5 critical issues from the audit. 
 - `flutter test`: **387 passed, 0 failed**
 
 ---
+
+## 2026-02-13 — DeviceAuthRepository: Auto-Login with Device-Local UUID
+
+### Problem
+The app used `MockAuthRepository` — an in-memory mock that lost all session state on every restart, forcing users through login screens each launch. Since the app is offline-only with no cloud backend, real email/social auth is meaningless. Users needed to seamlessly open the app directly to their vault.
+
+### Solution
+Implemented **DeviceAuthRepository** — generates a UUID on first launch, persists it in `FlutterSecureStorage`, and auto-authenticates on every subsequent launch. No login screens are ever shown.
+
+### Changes
+
+#### 1. Added `AuthProvider.device` Enum Value
+- **File**: `auth_user.dart`
+- Added `device` to the `AuthProvider` enum alongside `email`, `google`, `apple`
+
+#### 2. Created `DeviceAuthRepository`
+- **File**: `device_auth_repository.dart` (NEW)
+- Implements full `AuthRepository` interface using `FlutterSecureStorage`
+- `getCurrentUser()`: Reads UUID from secure storage; generates + stores one on first call
+- `signOut()`: No-op (UUID must persist or all receipt data becomes orphaned)
+- `deleteAccount()`: Deletes the stored UUID key
+- `getAvailableProviders()`: Returns `[AuthProvider.device]`
+- All other methods (signIn, signUp, social, confirm, password reset): Throw `UnsupportedError`
+
+#### 3. Updated DI Registration
+- **File**: `injection.dart`
+- Swapped `MockAuthRepository()` → `DeviceAuthRepository()` in GetIt registration
+
+#### 4. Replaced "Sign Out" with "Clear All Data" in Settings
+- **File**: `settings_screen.dart`
+- Removed Sign Out tile (meaningless for device auth — no session to end)
+- Added "Clear All Data" tile (red, `Icons.delete_forever`) for GDPR wipe
+- Flow: closes database via `DatabaseProvider.close()` → dispatches `AuthDeleteAccountRequested`
+- Confirmation dialog warns the action is permanent and irreversible
+
+#### 5. Added Localization Keys
+- **Files**: `app_en.arb`, `app_el.arb`
+- `clearAllData`: "Clear All Data" / "Διαγραφή Όλων των Δεδομένων"
+- `clearAllDataConfirm`: Permanent deletion warning in both languages
+
+#### 6. Updated Settings Screen Tests
+- **File**: `settings_screen_test.dart`
+- Replaced Sign Out rendering test with Clear All Data test (checks red text color)
+- Replaced sign-out confirmation group with clear-all-data group
+- Tests confirm dialog text and verifies `mockAuthRepo.deleteAccount()` is called
+
+#### 7. Created DeviceAuthRepository Tests
+- **File**: `device_auth_repository_test.dart` (NEW)
+- 14 tests covering: UUID generation on first call, UUID persistence, signOut no-op, deleteAccount clears UUID, getAvailableProviders, and 8 unsupported method throw tests
+
+### Key Decision
+- `AuthBloc._authRepository` is private, so the settings screen cannot call `deleteAccount()` directly. Solved by using the existing `AuthDeleteAccountRequested` event, which internally calls `deleteAccount()` and emits `AuthUnauthenticated`.
+
+### Status
+- `flutter analyze`: **0 issues**
+- `flutter test`: **676 passed, 0 failed**
+- Commit: `5c9a8fd` pushed to `main`
+
+---
