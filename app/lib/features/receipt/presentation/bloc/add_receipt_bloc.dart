@@ -37,6 +37,7 @@ class AddReceiptBloc extends Bloc<AddReceiptEvent, AddReceiptState> {
     on<FastSave>(_onFastSave);
     on<AddMoreImages>(_onAddMoreImages);
     on<RetryOcr>(_onRetryOcr);
+    on<BatchSaveAll>(_onBatchSaveAll);
     on<ResetForm>(_onResetForm);
   }
 
@@ -84,7 +85,7 @@ class AddReceiptBloc extends Bloc<AddReceiptEvent, AddReceiptState> {
 
     emit(const AddReceiptCapturing());
     try {
-      final images = await _imagePipeline.pickFromGallery();
+      final images = await _imagePipeline.pickFromGallery(maxImages: 20);
       if (images.isEmpty) {
         emit(const AddReceiptInitial());
         return;
@@ -93,7 +94,11 @@ class AddReceiptBloc extends Bloc<AddReceiptEvent, AddReceiptState> {
       for (final img in images) {
         processed.add(await _imagePipeline.processImage(img));
       }
-      emit(AddReceiptImagesReady(processed));
+      if (processed.length == 1) {
+        emit(AddReceiptImagesReady(processed));
+      } else {
+        emit(AddReceiptBatchReady(processed));
+      }
     } catch (e) {
       emit(AddReceiptError(e.toString()));
     }
@@ -114,7 +119,11 @@ class AddReceiptBloc extends Bloc<AddReceiptEvent, AddReceiptState> {
       for (final img in images) {
         processed.add(await _imagePipeline.processImage(img));
       }
-      emit(AddReceiptImagesReady(processed));
+      if (processed.length == 1) {
+        emit(AddReceiptImagesReady(processed));
+      } else {
+        emit(AddReceiptBatchReady(processed));
+      }
     } catch (e) {
       emit(AddReceiptError(e.toString()));
     }
@@ -326,6 +335,50 @@ class AddReceiptBloc extends Bloc<AddReceiptEvent, AddReceiptState> {
     }
   }
 
+  Future<void> _onBatchSaveAll(
+    BatchSaveAll event,
+    Emitter<AddReceiptState> emit,
+  ) async {
+    final currentState = state;
+    if (currentState is! AddReceiptBatchReady) return;
+
+    final images = currentState.images;
+    final total = images.length;
+    var savedCount = 0;
+    var failedCount = 0;
+
+    for (var i = 0; i < total; i++) {
+      emit(AddReceiptBatchProcessing(current: i + 1, total: total));
+      try {
+        final image = images[i];
+        final imagePaths = [image.localPath];
+        final ocrResult = await _ocrService.recognizeMultipleImages(imagePaths);
+        final parsed = _ocrService.parseRawText(ocrResult.rawText);
+
+        final fieldsState = AddReceiptFieldsReady(
+          images: [image],
+          storeName: parsed.extractedStoreName,
+          purchaseDate: parsed.extractedDate,
+          totalAmount: parsed.extractedTotal,
+          currency: parsed.extractedCurrency ?? 'EUR',
+          ocrResult: parsed,
+        );
+
+        final receipt = _buildReceipt(
+          userId: event.userId,
+          fieldsState: fieldsState,
+        );
+        await _receiptRepository.saveReceipt(receipt);
+        await _scheduleRemindersIfNeeded(receipt);
+        savedCount++;
+      } catch (_) {
+        failedCount++;
+      }
+    }
+
+    emit(AddReceiptBatchComplete(count: savedCount, failedCount: failedCount));
+  }
+
   void _onResetForm(
     ResetForm event,
     Emitter<AddReceiptState> emit,
@@ -351,6 +404,7 @@ class AddReceiptBloc extends Bloc<AddReceiptEvent, AddReceiptState> {
     if (s is AddReceiptProcessingOcr) return s.images;
     if (s is AddReceiptFieldsReady) return s.images;
     if (s is AddReceiptSaving) return s.images;
+    if (s is AddReceiptBatchReady) return s.images;
     return null;
   }
 

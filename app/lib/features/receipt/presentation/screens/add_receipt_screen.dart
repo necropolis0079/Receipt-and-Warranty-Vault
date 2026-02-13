@@ -72,6 +72,16 @@ class _AddReceiptBody extends StatelessWidget {
           );
           Navigator.of(context).pop();
         }
+        if (state is AddReceiptBatchReady) {
+          // Auto-dispatch batch save when images are ready.
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!context.mounted) return;
+            final authState = context.read<AuthBloc>().state;
+            final userId =
+                authState is AuthAuthenticated ? authState.user.userId : '';
+            context.read<AddReceiptBloc>().add(BatchSaveAll(userId));
+          });
+        }
         if (state is AddReceiptError) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -137,6 +147,10 @@ class _AddReceiptBody extends StatelessWidget {
         _OcrProcessingView(state: state),
       AddReceiptFieldsReady() =>
         _FieldsReadyView(state: state, l10n: l10n),
+      AddReceiptBatchReady() || AddReceiptBatchProcessing() =>
+        _BatchProcessingView(state: state, l10n: l10n),
+      AddReceiptBatchComplete() =>
+        _BatchCompleteView(state: state, l10n: l10n),
       AddReceiptSaving() =>
         Center(child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -634,6 +648,103 @@ class _PermissionDeniedView extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+// =============================================================================
+// Batch processing — progress indicator
+// =============================================================================
+
+class _BatchProcessingView extends StatelessWidget {
+  const _BatchProcessingView({required this.state, required this.l10n});
+
+  final AddReceiptState state;
+  final AppLocalizations l10n;
+
+  @override
+  Widget build(BuildContext context) {
+    final int current;
+    final int total;
+
+    if (state is AddReceiptBatchProcessing) {
+      current = (state as AddReceiptBatchProcessing).current;
+      total = (state as AddReceiptBatchProcessing).total;
+    } else {
+      // BatchReady — waiting for event dispatch
+      current = 0;
+      total = (state as AddReceiptBatchReady).images.length;
+    }
+
+    final progress = total > 0 ? current / total : 0.0;
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(value: progress > 0 ? progress : null),
+            const SizedBox(height: 24),
+            Text(
+              '$current / $total',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            LinearProgressIndicator(value: progress > 0 ? progress : null),
+            const SizedBox(height: 16),
+            Text(
+              l10n.savingReceipt,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// =============================================================================
+// Batch complete — success/warning + done button
+// =============================================================================
+
+class _BatchCompleteView extends StatelessWidget {
+  const _BatchCompleteView({required this.state, required this.l10n});
+
+  final AddReceiptBatchComplete state;
+  final AppLocalizations l10n;
+
+  @override
+  Widget build(BuildContext context) {
+    final hasFailures = state.failedCount > 0;
+
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            hasFailures ? Icons.warning_amber : Icons.check_circle,
+            size: 64,
+            color: hasFailures ? AppColors.accentAmber : AppColors.primaryGreen,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            hasFailures
+                ? l10n.bulkImportCompleteWithFailures(
+                    state.count, state.failedCount)
+                : l10n.foundImages(state.count),
+            style: Theme.of(context).textTheme.titleLarge,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 24),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(l10n.done),
+          ),
+        ],
       ),
     );
   }

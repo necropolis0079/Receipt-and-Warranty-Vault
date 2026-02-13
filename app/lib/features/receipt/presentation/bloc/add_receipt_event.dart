@@ -116,6 +116,15 @@ class RetryOcr extends AddReceiptEvent {
   const RetryOcr();
 }
 
+/// Start batch OCR + save for all images in AddReceiptBatchReady state.
+class BatchSaveAll extends AddReceiptEvent {
+  const BatchSaveAll(this.userId);
+  final String userId;
+
+  @override
+  List<Object?> get props => [userId];
+}
+
 /// Reset the form to its initial state.
 class ResetForm extends AddReceiptEvent {
   const ResetForm();

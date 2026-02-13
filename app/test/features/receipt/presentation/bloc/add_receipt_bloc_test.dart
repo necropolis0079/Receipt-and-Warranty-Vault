@@ -142,7 +142,23 @@ void main() {
     // 5. ImportFromGallery — success
     // -------------------------------------------------------------------------
     blocTest<AddReceiptBloc, AddReceiptState>(
-      'ImportFromGallery emits [Capturing, ImagesReady]',
+      'ImportFromGallery emits [Capturing, ImagesReady] for single image',
+      build: () {
+        when(() => mockImagePipeline.pickFromGallery(maxImages: any(named: 'maxImages')))
+            .thenAnswer((_) async => [testImage]);
+        when(() => mockImagePipeline.processImage(testImage))
+            .thenAnswer((_) async => testImage);
+        return buildBloc();
+      },
+      act: (bloc) => bloc.add(const ImportFromGallery()),
+      expect: () => [
+        const AddReceiptCapturing(),
+        const AddReceiptImagesReady([testImage]),
+      ],
+    );
+
+    blocTest<AddReceiptBloc, AddReceiptState>(
+      'ImportFromGallery emits [Capturing, BatchReady] for multiple images',
       build: () {
         when(() => mockImagePipeline.pickFromGallery(maxImages: any(named: 'maxImages')))
             .thenAnswer((_) async => [testImage, testImage2]);
@@ -155,7 +171,7 @@ void main() {
       act: (bloc) => bloc.add(const ImportFromGallery()),
       expect: () => [
         const AddReceiptCapturing(),
-        const AddReceiptImagesReady([testImage, testImage2]),
+        const AddReceiptBatchReady([testImage, testImage2]),
       ],
     );
 
@@ -392,7 +408,58 @@ void main() {
     );
 
     // -------------------------------------------------------------------------
-    // 18. ResetForm — returns to Initial
+    // 18. BatchSaveAll — success
+    // -------------------------------------------------------------------------
+    blocTest<AddReceiptBloc, AddReceiptState>(
+      'BatchSaveAll emits progress then BatchComplete',
+      build: () {
+        when(() => mockOcrService.recognizeMultipleImages(any()))
+            .thenAnswer((_) async => testOcrResult);
+        when(() => mockOcrService.parseRawText(any()))
+            .thenReturn(testOcrResult);
+        when(() => mockReceiptRepo.saveReceipt(any()))
+            .thenAnswer((_) async {});
+        return buildBloc();
+      },
+      seed: () => const AddReceiptBatchReady([testImage, testImage2]),
+      act: (bloc) => bloc.add(const BatchSaveAll('user-123')),
+      expect: () => [
+        const AddReceiptBatchProcessing(current: 1, total: 2),
+        const AddReceiptBatchProcessing(current: 2, total: 2),
+        const AddReceiptBatchComplete(count: 2, failedCount: 0),
+      ],
+    );
+
+    // -------------------------------------------------------------------------
+    // 19. BatchSaveAll — partial failure
+    // -------------------------------------------------------------------------
+    blocTest<AddReceiptBloc, AddReceiptState>(
+      'BatchSaveAll reports failedCount on partial OCR failure',
+      build: () {
+        var callCount = 0;
+        when(() => mockOcrService.recognizeMultipleImages(any()))
+            .thenAnswer((_) async {
+          callCount++;
+          if (callCount == 1) throw Exception('OCR failed');
+          return testOcrResult;
+        });
+        when(() => mockOcrService.parseRawText(any()))
+            .thenReturn(testOcrResult);
+        when(() => mockReceiptRepo.saveReceipt(any()))
+            .thenAnswer((_) async {});
+        return buildBloc();
+      },
+      seed: () => const AddReceiptBatchReady([testImage, testImage2]),
+      act: (bloc) => bloc.add(const BatchSaveAll('user-123')),
+      expect: () => [
+        const AddReceiptBatchProcessing(current: 1, total: 2),
+        const AddReceiptBatchProcessing(current: 2, total: 2),
+        const AddReceiptBatchComplete(count: 1, failedCount: 1),
+      ],
+    );
+
+    // -------------------------------------------------------------------------
+    // 20. ResetForm — returns to Initial
     // -------------------------------------------------------------------------
     blocTest<AddReceiptBloc, AddReceiptState>(
       'ResetForm returns to Initial',

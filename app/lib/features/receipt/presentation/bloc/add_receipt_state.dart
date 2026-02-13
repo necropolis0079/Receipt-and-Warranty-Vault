@@ -135,6 +135,35 @@ class AddReceiptSaved extends AddReceiptState {
   List<Object?> get props => [receiptId];
 }
 
+/// Multiple images picked — ready for batch OCR + save as separate receipts.
+class AddReceiptBatchReady extends AddReceiptState {
+  const AddReceiptBatchReady(this.images);
+  final List<ImageData> images;
+
+  @override
+  List<Object?> get props => [images];
+}
+
+/// Batch processing in progress — OCR + save for each image.
+class AddReceiptBatchProcessing extends AddReceiptState {
+  const AddReceiptBatchProcessing({required this.current, required this.total});
+  final int current;
+  final int total;
+
+  @override
+  List<Object?> get props => [current, total];
+}
+
+/// Batch complete — all images processed as separate receipts.
+class AddReceiptBatchComplete extends AddReceiptState {
+  const AddReceiptBatchComplete({required this.count, required this.failedCount});
+  final int count;
+  final int failedCount;
+
+  @override
+  List<Object?> get props => [count, failedCount];
+}
+
 /// An error occurred during any step.
 class AddReceiptError extends AddReceiptState {
   const AddReceiptError(this.message, {this.previousState});
