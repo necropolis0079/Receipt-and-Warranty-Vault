@@ -73,6 +73,7 @@ void main() {
         .thenAnswer((_) async => false);
     when(() => mockAuthRepo.getCurrentUser()).thenAnswer((_) async => null);
     when(() => mockAuthRepo.signOut()).thenAnswer((_) async {});
+    when(() => mockAuthRepo.deleteAccount()).thenAnswer((_) async {});
 
     // Create real cubits/blocs
     authBloc = AuthBloc(authRepository: mockAuthRepo);
@@ -182,17 +183,17 @@ void main() {
       expect(find.text('About'), findsOneWidget);
     });
 
-    testWidgets('renders Sign Out tile in red', (tester) async {
+    testWidgets('renders Clear All Data tile in red', (tester) async {
       await pumpApp(tester);
       await tester.scrollUntilVisible(
-        find.text('Sign Out'),
+        find.text('Clear All Data'),
         200,
         scrollable: find.byType(Scrollable),
       );
       await tester.pumpAndSettle();
-      final signOutFinder = find.text('Sign Out');
-      expect(signOutFinder, findsOneWidget);
-      final textWidget = tester.widget<Text>(signOutFinder);
+      final clearAllFinder = find.text('Clear All Data');
+      expect(clearAllFinder, findsOneWidget);
+      final textWidget = tester.widget<Text>(clearAllFinder);
       expect(textWidget.style?.color, Colors.red);
     });
   });
@@ -303,43 +304,47 @@ void main() {
     });
   });
 
-  group('SettingsScreen — sign out', () {
-    testWidgets('tapping Sign Out shows confirmation dialog', (tester) async {
-      await pumpApp(tester);
-
-      await tester.scrollUntilVisible(
-        find.text('Sign Out'),
-        200,
-        scrollable: find.byType(Scrollable),
-      );
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Sign Out'));
-      await tester.pumpAndSettle();
-
-      expect(
-          find.text('Are you sure you want to sign out?'), findsOneWidget);
-      expect(find.text('Cancel'), findsOneWidget);
-      expect(find.text('Confirm'), findsOneWidget);
-    });
-
-    testWidgets('confirming sign out dispatches AuthSignOutRequested',
+  group('SettingsScreen — clear all data', () {
+    testWidgets('tapping Clear All Data shows confirmation dialog',
         (tester) async {
       await pumpApp(tester);
 
       await tester.scrollUntilVisible(
-        find.text('Sign Out'),
+        find.text('Clear All Data'),
         200,
         scrollable: find.byType(Scrollable),
       );
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Sign Out'));
+      await tester.tap(find.text('Clear All Data'));
+      await tester.pumpAndSettle();
+
+      expect(
+          find.text(
+              'This will permanently delete all receipts, settings, and app data. This cannot be undone.'),
+          findsOneWidget);
+      expect(find.text('Cancel'), findsOneWidget);
+      expect(find.text('Confirm'), findsOneWidget);
+    });
+
+    testWidgets(
+        'confirming clear all data dispatches AuthDeleteAccountRequested',
+        (tester) async {
+      await pumpApp(tester);
+
+      await tester.scrollUntilVisible(
+        find.text('Clear All Data'),
+        200,
+        scrollable: find.byType(Scrollable),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Clear All Data'));
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Confirm'));
       await tester.pumpAndSettle();
 
-      // AuthBloc should have processed the sign out — mock repo was called
-      verify(() => mockAuthRepo.signOut()).called(1);
+      // AuthBloc should have processed the delete account request
+      verify(() => mockAuthRepo.deleteAccount()).called(1);
     });
   });
 }

@@ -1361,5 +1361,14 @@
         "example": "2"
       }
     }
+  },
+
+  "clearAllData": "Clear All Data",
+  "@clearAllData": {
+    "description": "Button to clear all app data (GDPR wipe)"
+  },
+  "clearAllDataConfirm": "This will permanently delete all receipts, settings, and app data. This cannot be undone.",
+  "@clearAllDataConfirm": {
+    "description": "Confirmation message for clearing all data"
   }
 }

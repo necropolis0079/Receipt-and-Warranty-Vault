@@ -328,5 +328,8 @@
   "notificationWarrantyExpiringSoon": "Η εγγύηση λήγει σύντομα",
   "notificationWarrantyExpiringSoonBody": "Η εγγύηση για {storeName} λήγει σε {days} ημέρες.",
 
-  "bulkImportCompleteWithFailures": "{count} εισήχθησαν, {failedCount} απέτυχαν"
+  "bulkImportCompleteWithFailures": "{count} εισήχθησαν, {failedCount} απέτυχαν",
+
+  "clearAllData": "Διαγραφή Όλων των Δεδομένων",
+  "clearAllDataConfirm": "Αυτό θα διαγράψει οριστικά όλες τις αποδείξεις, τις ρυθμίσεις και τα δεδομένα της εφαρμογής. Αυτή η ενέργεια δεν μπορεί να αναιρεθεί."
 }

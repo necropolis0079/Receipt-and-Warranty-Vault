@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-enum AuthProvider { email, google, apple }
+enum AuthProvider { email, google, apple, device }
 
 class AuthUser extends Equatable {
   const AuthUser({

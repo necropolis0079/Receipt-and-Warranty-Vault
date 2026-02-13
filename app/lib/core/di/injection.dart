@@ -8,7 +8,7 @@ import '../notifications/local_notification_service.dart';
 import '../notifications/notification_service.dart';
 import '../notifications/reminder_scheduler.dart';
 import '../services/home_widget_service.dart';
-import '../../features/auth/data/repositories/mock_auth_repository.dart';
+import '../../features/auth/data/repositories/device_auth_repository.dart';
 import '../../features/auth/domain/repositories/auth_repository.dart';
 import '../../features/auth/presentation/bloc/auth_bloc.dart';
 import '../../features/bulk_import/data/services/device_gallery_scanner_service.dart';
@@ -79,7 +79,7 @@ Future<void> configureDependencies() async {
   );
 
   // --- Repositories ---
-  getIt.registerLazySingleton<AuthRepository>(() => MockAuthRepository());
+  getIt.registerLazySingleton<AuthRepository>(() => DeviceAuthRepository());
 
   getIt.registerSingletonWithDependencies<ReceiptRepository>(
     () => LocalReceiptRepository(

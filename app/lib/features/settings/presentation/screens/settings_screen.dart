@@ -8,6 +8,7 @@ import 'package:get_it/get_it.dart';
 import '../../../../core/database/app_database.dart'; // debug seeder only
 import '../../../../core/database/daos/categories_dao.dart';
 import '../../../../core/database/daos/settings_dao.dart';
+import '../../../../core/database/database_provider.dart';
 import '../../../../core/debug/debug_data_seeder.dart';
 import '../../../../core/notifications/reminder_scheduler.dart';
 import '../../../../core/l10n/locale_cubit.dart';
@@ -33,7 +34,7 @@ import '../../../receipt/presentation/screens/trash_screen.dart';
 import 'batch_export_screen.dart';
 import 'privacy_policy_screen.dart';
 
-/// Settings screen with live App Lock toggle and Sign Out action.
+/// Settings screen with live App Lock toggle and Clear All Data action.
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
@@ -190,20 +191,25 @@ class SettingsScreen extends StatelessWidget {
 
           const Divider(),
 
-          // Sign Out — wired to AuthBloc
+          // Clear All Data — GDPR wipe (device-auth mode)
           _SettingsTile(
-            icon: Icons.logout,
-            title: l10n.signOut,
+            icon: Icons.delete_forever,
+            title: l10n.clearAllData,
             textColor: Colors.red,
             onTap: () {
               _showConfirmDialog(
                 context,
-                title: l10n.signOut,
-                message: l10n.authSignOutConfirm,
-                onConfirm: () {
-                  context
-                      .read<AuthBloc>()
-                      .add(const AuthSignOutRequested());
+                title: l10n.clearAllData,
+                message: l10n.clearAllDataConfirm,
+                onConfirm: () async {
+                  // Close the database
+                  await DatabaseProvider.close();
+                  // Delete account (removes device UUID + emits unauthenticated)
+                  if (context.mounted) {
+                    context
+                        .read<AuthBloc>()
+                        .add(const AuthDeleteAccountRequested());
+                  }
                 },
               );
             },
