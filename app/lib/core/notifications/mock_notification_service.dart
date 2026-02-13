@@ -48,6 +48,8 @@ class MockNotificationService implements NotificationService {
     required String storeName,
     required DateTime expiryDate,
     required int daysBefore,
+    String? title,
+    String? body,
   }) async {
     scheduledReminders.add(
       MockScheduledReminder(

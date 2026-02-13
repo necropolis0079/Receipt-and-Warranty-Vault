@@ -32,10 +32,12 @@ class BulkImportScreen extends StatelessWidget {
       body: BlocConsumer<BulkImportCubit, BulkImportState>(
         listener: (context, state) {
           if (state is BulkImportComplete) {
+            final message = state.failedCount > 0
+                ? l10n.bulkImportCompleteWithFailures(
+                    state.count, state.failedCount)
+                : l10n.foundImages(state.count);
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(l10n.foundImages(state.count)),
-              ),
+              SnackBar(content: Text(message)),
             );
           }
         },
@@ -215,10 +217,19 @@ class BulkImportScreen extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.check_circle, size: 64, color: Color(0xFF2D5A3D)),
+          Icon(
+            state.failedCount > 0 ? Icons.warning_amber : Icons.check_circle,
+            size: 64,
+            color: state.failedCount > 0
+                ? const Color(0xFFD4920B)
+                : const Color(0xFF2D5A3D),
+          ),
           const SizedBox(height: 16),
           Text(
-            l10n.foundImages(state.count),
+            state.failedCount > 0
+                ? l10n.bulkImportCompleteWithFailures(
+                    state.count, state.failedCount)
+                : l10n.foundImages(state.count),
             style: Theme.of(context).textTheme.titleLarge,
           ),
           const SizedBox(height: 24),

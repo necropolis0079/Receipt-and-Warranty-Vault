@@ -1,6 +1,8 @@
 import 'package:get_it/get_it.dart';
 
 import '../database/app_database.dart';
+import '../database/daos/categories_dao.dart';
+import '../database/daos/settings_dao.dart';
 import '../database/database_provider.dart';
 import '../notifications/local_notification_service.dart';
 import '../notifications/notification_service.dart';
@@ -41,6 +43,16 @@ Future<void> configureDependencies() async {
     () => DatabaseProvider.getInstance(),
   );
 
+  // --- DAOs (depend on AppDatabase) ---
+  getIt.registerSingletonWithDependencies<CategoriesDao>(
+    () => getIt<AppDatabase>().categoriesDao,
+    dependsOn: [AppDatabase],
+  );
+  getIt.registerSingletonWithDependencies<SettingsDao>(
+    () => getIt<AppDatabase>().settingsDao,
+    dependsOn: [AppDatabase],
+  );
+
   // --- Core Services ---
   getIt.registerLazySingleton<AppLockService>(() => LocalAuthService());
   getIt.registerLazySingleton<ImagePipelineService>(
@@ -61,9 +73,9 @@ Future<void> configureDependencies() async {
   getIt.registerSingletonWithDependencies<ReminderScheduler>(
     () => ReminderScheduler(
       notificationService: getIt<NotificationService>(),
-      settingsDao: getIt<AppDatabase>().settingsDao,
+      settingsDao: getIt<SettingsDao>(),
     ),
-    dependsOn: [AppDatabase],
+    dependsOn: [AppDatabase, SettingsDao],
   );
 
   // --- Repositories ---
@@ -90,12 +102,12 @@ Future<void> configureDependencies() async {
     () => ExpiringBloc(
       receiptRepository: getIt<ReceiptRepository>(),
       reminderScheduler: getIt<ReminderScheduler>(),
-      settingsDao: getIt<AppDatabase>().settingsDao,
+      settingsDao: getIt<SettingsDao>(),
     ),
   );
   getIt.registerFactory<CategoryManagementCubit>(
     () => CategoryManagementCubit(
-      categoriesDao: getIt<AppDatabase>().categoriesDao,
+      categoriesDao: getIt<CategoriesDao>(),
     ),
   );
   getIt.registerFactoryParam<SearchBloc, String, void>(

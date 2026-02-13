@@ -101,6 +101,7 @@ class BulkImportCubit extends Cubit<BulkImportState> {
 
     final total = selectedCandidates.length;
     const uuid = Uuid();
+    var failedCount = 0;
 
     for (var i = 0; i < total; i++) {
       emit(BulkImportProcessing(current: i + 1, total: total));
@@ -148,11 +149,15 @@ class BulkImportCubit extends Cubit<BulkImportState> {
         );
 
         await _receiptRepository.saveReceipt(receipt);
-      } catch (_) {
-        // Skip individual failures, continue with remaining
+      } catch (e) {
+        // Track individual failures, continue with remaining
+        failedCount++;
       }
     }
 
-    emit(BulkImportComplete(count: total));
+    emit(BulkImportComplete(
+      count: total - failedCount,
+      failedCount: failedCount,
+    ));
   }
 }

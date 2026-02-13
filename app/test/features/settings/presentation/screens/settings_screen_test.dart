@@ -6,6 +6,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:warrantyvault/core/database/app_database.dart';
+import 'package:warrantyvault/core/database/daos/categories_dao.dart';
+import 'package:warrantyvault/core/database/daos/settings_dao.dart';
 import 'package:warrantyvault/core/l10n/locale_cubit.dart';
 import 'package:warrantyvault/core/notifications/mock_notification_service.dart';
 import 'package:warrantyvault/core/notifications/notification_service.dart';
@@ -87,8 +89,10 @@ void main() {
     // In-memory Drift database for settings DAO
     db = AppDatabase.forTesting(NativeDatabase.memory());
 
-    // Register in GetIt for SettingsScreen's direct GetIt.I<AppDatabase>() calls
+    // Register in GetIt for SettingsScreen's direct DAO / service lookups
     getIt.registerSingleton<AppDatabase>(db);
+    getIt.registerSingleton<CategoriesDao>(db.categoriesDao);
+    getIt.registerSingleton<SettingsDao>(db.settingsDao);
     getIt.registerSingleton<NotificationService>(mockNotificationService);
     getIt.registerSingleton<ReminderScheduler>(
       ReminderScheduler(

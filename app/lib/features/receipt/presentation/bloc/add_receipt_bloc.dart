@@ -366,11 +366,16 @@ class AddReceiptBloc extends Bloc<AddReceiptEvent, AddReceiptState> {
     if (fieldsState.warrantyMonths > 0 && fieldsState.purchaseDate != null) {
       final purchaseDateTime = DateTime.tryParse(fieldsState.purchaseDate!);
       if (purchaseDateTime != null) {
-        final expiryDate = DateTime(
-          purchaseDateTime.year,
-          purchaseDateTime.month + fieldsState.warrantyMonths,
-          purchaseDateTime.day,
-        );
+        // Calculate expiry: add months, then clamp day to last day of target
+        // month to avoid overflow (e.g. Jan 31 + 1 month = Feb 28/29).
+        final targetMonth =
+            purchaseDateTime.month + fieldsState.warrantyMonths;
+        final expiryRaw = DateTime(purchaseDateTime.year, targetMonth + 1, 0);
+        final clampedDay = purchaseDateTime.day <= expiryRaw.day
+            ? purchaseDateTime.day
+            : expiryRaw.day;
+        final expiryDate =
+            DateTime(purchaseDateTime.year, targetMonth, clampedDay);
         warrantyExpiryDate = expiryDate.toIso8601String().split('T').first;
       }
     }

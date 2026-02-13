@@ -44,8 +44,11 @@ class HybridOcrService implements OcrService {
             return tesseractResult;
           }
         }
-      } catch (_) {
+      } catch (e) {
         // Tesseract not available or failed — fall back to ML Kit result.
+        // Log for diagnostics so configuration issues are visible.
+        // ignore: avoid_print
+        print('HybridOcrService: Tesseract fallback failed: $e');
       }
     }
 

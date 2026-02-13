@@ -1290,5 +1290,76 @@
   "analysisFailed": "Analysis failed",
   "@analysisFailed": {
     "description": "OCR progress status when analysis fails"
+  },
+
+  "languageEnglish": "English",
+  "@languageEnglish": {
+    "description": "Display name for the English language option"
+  },
+  "languageGreek": "Ελληνικά",
+  "@languageGreek": {
+    "description": "Display name for the Greek language option"
+  },
+
+  "notificationWarrantyExpiresToday": "Warranty expires today",
+  "@notificationWarrantyExpiresToday": {
+    "description": "Notification title when warranty expires today"
+  },
+  "notificationWarrantyExpiresTodayBody": "The warranty for {storeName} expires today.",
+  "@notificationWarrantyExpiresTodayBody": {
+    "description": "Notification body when warranty expires today",
+    "placeholders": {
+      "storeName": {
+        "type": "String",
+        "example": "IKEA"
+      }
+    }
+  },
+  "notificationWarrantyExpiresTomorrow": "Warranty expires tomorrow",
+  "@notificationWarrantyExpiresTomorrow": {
+    "description": "Notification title when warranty expires tomorrow"
+  },
+  "notificationWarrantyExpiresTomorrowBody": "The warranty for {storeName} expires tomorrow.",
+  "@notificationWarrantyExpiresTomorrowBody": {
+    "description": "Notification body when warranty expires tomorrow",
+    "placeholders": {
+      "storeName": {
+        "type": "String",
+        "example": "IKEA"
+      }
+    }
+  },
+  "notificationWarrantyExpiringSoon": "Warranty expiring soon",
+  "@notificationWarrantyExpiringSoon": {
+    "description": "Notification title when warranty is expiring in N days"
+  },
+  "notificationWarrantyExpiringSoonBody": "The warranty for {storeName} expires in {days} days.",
+  "@notificationWarrantyExpiringSoonBody": {
+    "description": "Notification body when warranty is expiring in N days",
+    "placeholders": {
+      "storeName": {
+        "type": "String",
+        "example": "IKEA"
+      },
+      "days": {
+        "type": "int",
+        "example": "7"
+      }
+    }
+  },
+
+  "bulkImportCompleteWithFailures": "{count} imported, {failedCount} failed",
+  "@bulkImportCompleteWithFailures": {
+    "description": "Bulk import completion message when some imports failed",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "8"
+      },
+      "failedCount": {
+        "type": "int",
+        "example": "2"
+      }
+    }
   }
 }

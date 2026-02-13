@@ -6,7 +6,7 @@ import 'package:permission_handler/permission_handler.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
-import '../../../../core/database/app_database.dart';
+import '../../../../core/database/daos/categories_dao.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
 import '../../domain/repositories/receipt_repository.dart';
@@ -350,7 +350,7 @@ class _FieldsReadyViewState extends State<_FieldsReadyView> {
   }
 
   Future<void> _loadCategories() async {
-    final dao = GetIt.I<AppDatabase>().categoriesDao;
+    final dao = GetIt.I<CategoriesDao>();
     final entries = await dao.getAll();
     if (mounted) {
       setState(() {

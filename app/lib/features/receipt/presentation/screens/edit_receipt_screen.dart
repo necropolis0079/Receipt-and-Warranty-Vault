@@ -4,7 +4,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:get_it/get_it.dart';
 
 import '../../../../core/constants/app_spacing.dart';
-import '../../../../core/database/app_database.dart';
+import '../../../../core/database/daos/categories_dao.dart';
 import '../../domain/entities/receipt.dart';
 import '../bloc/vault_bloc.dart';
 import '../bloc/vault_event.dart';
@@ -56,7 +56,7 @@ class _EditReceiptScreenState extends State<EditReceiptScreen> {
   }
 
   Future<void> _loadCategories() async {
-    final dao = GetIt.I<AppDatabase>().categoriesDao;
+    final dao = GetIt.I<CategoriesDao>();
     final entries = await dao.getAll();
     if (mounted) {
       setState(() {
@@ -84,11 +84,15 @@ class _EditReceiptScreenState extends State<EditReceiptScreen> {
     if (_warrantyMonths > 0 && _purchaseDate != null) {
       final purchaseDateTime = DateTime.tryParse(_purchaseDate!);
       if (purchaseDateTime != null) {
-        final expiryDate = DateTime(
-          purchaseDateTime.year,
-          purchaseDateTime.month + _warrantyMonths,
-          purchaseDateTime.day,
-        );
+        // Calculate expiry: add months, then clamp day to last day of target
+        // month to avoid overflow (e.g. Jan 31 + 1 month = Feb 28/29).
+        final targetMonth = purchaseDateTime.month + _warrantyMonths;
+        final expiryRaw = DateTime(purchaseDateTime.year, targetMonth + 1, 0);
+        final clampedDay = purchaseDateTime.day <= expiryRaw.day
+            ? purchaseDateTime.day
+            : expiryRaw.day;
+        final expiryDate =
+            DateTime(purchaseDateTime.year, targetMonth, clampedDay);
         warrantyExpiryDate = expiryDate.toIso8601String().split('T').first;
       }
     } else if (_warrantyMonths == 0) {

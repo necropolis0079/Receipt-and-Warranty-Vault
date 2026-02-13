@@ -316,5 +316,17 @@
   "allWarrantiesSafe": "Όλες οι εγγυήσεις σας είναι ασφαλείς προς το παρόν.",
   "analyzingFields": "Ανάλυση πεδίων...",
   "analysisComplete": "Η ανάλυση ολοκληρώθηκε",
-  "analysisFailed": "Η ανάλυση απέτυχε"
+  "analysisFailed": "Η ανάλυση απέτυχε",
+
+  "languageEnglish": "English",
+  "languageGreek": "Ελληνικά",
+
+  "notificationWarrantyExpiresToday": "Η εγγύηση λήγει σήμερα",
+  "notificationWarrantyExpiresTodayBody": "Η εγγύηση για {storeName} λήγει σήμερα.",
+  "notificationWarrantyExpiresTomorrow": "Η εγγύηση λήγει αύριο",
+  "notificationWarrantyExpiresTomorrowBody": "Η εγγύηση για {storeName} λήγει αύριο.",
+  "notificationWarrantyExpiringSoon": "Η εγγύηση λήγει σύντομα",
+  "notificationWarrantyExpiringSoonBody": "Η εγγύηση για {storeName} λήγει σε {days} ημέρες.",
+
+  "bulkImportCompleteWithFailures": "{count} εισήχθησαν, {failedCount} απέτυχαν"
 }

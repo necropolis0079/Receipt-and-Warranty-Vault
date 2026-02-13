@@ -1,10 +1,14 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import 'package:get_it/get_it.dart';
 
-import '../../../../core/database/app_database.dart';
+import '../../../../core/database/app_database.dart'; // debug seeder only
+import '../../../../core/database/daos/categories_dao.dart';
+import '../../../../core/database/daos/settings_dao.dart';
+import '../../../../core/debug/debug_data_seeder.dart';
 import '../../../../core/notifications/reminder_scheduler.dart';
 import '../../../../core/l10n/locale_cubit.dart';
 import '../../../../core/l10n/locale_state.dart';
@@ -16,7 +20,12 @@ import '../../../../core/theme/theme_cubit.dart';
 import '../../../../core/theme/theme_state.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_event.dart';
+import '../../../auth/presentation/bloc/auth_state.dart';
 import '../../../receipt/presentation/bloc/trash_cubit.dart';
+import '../../../receipt/presentation/bloc/vault_bloc.dart';
+import '../../../receipt/presentation/bloc/vault_event.dart';
+import '../../../warranty/presentation/bloc/expiring_bloc.dart';
+import '../../../warranty/presentation/bloc/expiring_event.dart';
 import '../../../bulk_import/presentation/cubit/bulk_import_cubit.dart';
 import '../../../bulk_import/presentation/screens/bulk_import_screen.dart';
 import '../../../receipt/presentation/screens/category_management_screen.dart';
@@ -43,8 +52,8 @@ class SettingsScreen extends StatelessWidget {
             builder: (context, localeState) {
               final displayName =
                   localeState.locale.languageCode == 'el'
-                      ? 'Ελληνικά'
-                      : 'English';
+                      ? l10n.languageGreek
+                      : l10n.languageEnglish;
               return _SettingsTile(
                 icon: Icons.language,
                 title: l10n.language,
@@ -123,7 +132,7 @@ class SettingsScreen extends StatelessWidget {
               Navigator.of(context).push<void>(
                 MaterialPageRoute(
                   builder: (_) => CategoryManagementScreen(
-                    categoriesDao: GetIt.I<AppDatabase>().categoriesDao,
+                    categoriesDao: GetIt.I<CategoriesDao>(),
                   ),
                 ),
               );
@@ -170,6 +179,15 @@ class SettingsScreen extends StatelessWidget {
               );
             },
           ),
+          // Debug: Seed test data (remove before production)
+          if (kDebugMode)
+            _SettingsTile(
+              icon: Icons.bug_report,
+              title: 'Seed 20 Test Receipts',
+              subtitle: 'Debug only — inserts test data',
+              onTap: () => _seedTestData(context),
+            ),
+
           const Divider(),
 
           // Sign Out — wired to AuthBloc
@@ -195,10 +213,41 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
+  Future<void> _seedTestData(BuildContext context) async {
+    final authState = context.read<AuthBloc>().state;
+    if (authState is! AuthAuthenticated) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Not authenticated')),
+      );
+      return;
+    }
+    final userId = authState.user.userId;
+    final db = GetIt.I<AppDatabase>();
+    final seeder = DebugDataSeeder(database: db);
+
+    try {
+      final count = await seeder.seedTestData(userId);
+      if (context.mounted) {
+        // Refresh the vault and expiring warranties
+        context.read<VaultBloc>().add(VaultLoadRequested(userId));
+        context.read<ExpiringBloc>().add(ExpiringLoadRequested(userId));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Seeded $count test receipts')),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Seed error: $e')),
+        );
+      }
+    }
+  }
+
   void _showLanguageDialog(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final localeCubit = context.read<LocaleCubit>();
-    final settingsDao = GetIt.I<AppDatabase>().settingsDao;
+    final settingsDao = GetIt.I<SettingsDao>();
 
     showDialog<void>(
       context: context,
@@ -229,7 +278,7 @@ class SettingsScreen extends StatelessWidget {
   void _showThemeDialog(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final themeCubit = context.read<ThemeCubit>();
-    final settingsDao = GetIt.I<AppDatabase>().settingsDao;
+    final settingsDao = GetIt.I<SettingsDao>();
 
     showDialog<void>(
       context: context,
@@ -332,9 +381,9 @@ class _ReminderTileState extends State<_ReminderTile> {
   }
 
   Future<void> _loadSettings() async {
-    if (!GetIt.I.isRegistered<AppDatabase>()) return;
+    if (!GetIt.I.isRegistered<SettingsDao>()) return;
     final value =
-        await GetIt.I<AppDatabase>().settingsDao.getValue('reminders_enabled');
+        await GetIt.I<SettingsDao>().getValue('reminders_enabled');
     final scheduler = GetIt.I<ReminderScheduler>();
     final intervals = await scheduler.getIntervals();
     if (mounted) {
@@ -370,7 +419,7 @@ class _ReminderTileState extends State<_ReminderTile> {
 
   void _showReminderDialog(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final settingsDao = GetIt.I<AppDatabase>().settingsDao;
+    final settingsDao = GetIt.I<SettingsDao>();
     final notificationService = GetIt.I<NotificationService>();
     final scheduler = GetIt.I<ReminderScheduler>();
 

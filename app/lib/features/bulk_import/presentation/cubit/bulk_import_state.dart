@@ -44,12 +44,13 @@ final class BulkImportProcessing extends BulkImportState {
 }
 
 final class BulkImportComplete extends BulkImportState {
-  const BulkImportComplete({required this.count});
+  const BulkImportComplete({required this.count, this.failedCount = 0});
 
   final int count;
+  final int failedCount;
 
   @override
-  List<Object?> get props => [count];
+  List<Object?> get props => [count, failedCount];
 }
 
 final class BulkImportError extends BulkImportState {

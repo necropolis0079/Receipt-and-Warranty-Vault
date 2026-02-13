@@ -71,7 +71,18 @@ class _ExpiringScreenState extends State<ExpiringScreen> {
           }
 
           if (state is ExpiringEmpty) {
-            return _EmptyBody();
+            return RefreshIndicator(
+              onRefresh: _onRefresh,
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: [
+                  SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.7,
+                    child: _EmptyBody(),
+                  ),
+                ],
+              ),
+            );
           }
 
           if (state is ExpiringLoaded) {

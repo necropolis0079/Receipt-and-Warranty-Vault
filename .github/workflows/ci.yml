@@ -58,3 +58,25 @@ jobs:
       - name: Build APK (debug)
         working-directory: app
         run: flutter build apk --debug
+
+  build-ios:
+    name: Build iOS (no codesign)
+    runs-on: macos-latest
+    needs: analyze-and-test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.27.4'
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        working-directory: app
+        run: flutter pub get
+
+      - name: Build iOS (no codesign)
+        working-directory: app
+        run: flutter build ios --debug --no-codesign

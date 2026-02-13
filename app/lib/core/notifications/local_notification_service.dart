@@ -77,6 +77,8 @@ class LocalNotificationService implements NotificationService {
     required String storeName,
     required DateTime expiryDate,
     required int daysBefore,
+    String? title,
+    String? body,
   }) async {
     final scheduledDate = expiryDate.subtract(Duration(days: daysBefore));
     final now = DateTime.now();
@@ -85,18 +87,22 @@ class LocalNotificationService implements NotificationService {
     final tzScheduledDate = tz.TZDateTime.from(scheduledDate, tz.local);
     final notificationId = _notificationId(receiptId, daysBefore);
 
-    final String title;
-    final String body;
+    // Use pre-localized strings if provided, otherwise fall back to English.
+    final String resolvedTitle;
+    final String resolvedBody;
 
-    if (daysBefore == 0) {
-      title = 'Warranty expires today';
-      body = 'The warranty for $storeName expires today.';
+    if (title != null && body != null) {
+      resolvedTitle = title;
+      resolvedBody = body;
+    } else if (daysBefore == 0) {
+      resolvedTitle = 'Warranty expires today';
+      resolvedBody = 'The warranty for $storeName expires today.';
     } else if (daysBefore == 1) {
-      title = 'Warranty expires tomorrow';
-      body = 'The warranty for $storeName expires tomorrow.';
+      resolvedTitle = 'Warranty expires tomorrow';
+      resolvedBody = 'The warranty for $storeName expires tomorrow.';
     } else {
-      title = 'Warranty expiring soon';
-      body = 'The warranty for $storeName expires in $daysBefore days.';
+      resolvedTitle = 'Warranty expiring soon';
+      resolvedBody = 'The warranty for $storeName expires in $daysBefore days.';
     }
 
     const androidDetails = AndroidNotificationDetails(
@@ -120,8 +126,8 @@ class LocalNotificationService implements NotificationService {
 
     await _plugin.zonedSchedule(
       notificationId,
-      title,
-      body,
+      resolvedTitle,
+      resolvedBody,
       tzScheduledDate,
       details,
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,

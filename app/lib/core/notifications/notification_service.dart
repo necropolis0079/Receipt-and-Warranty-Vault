@@ -13,11 +13,15 @@ abstract class NotificationService {
   /// [storeName] — displayed in the notification title/body.
   /// [expiryDate] — the warranty expiry date.
   /// [daysBefore] — how many days before [expiryDate] to fire (0 = on the day).
+  /// [title] — optional pre-localized notification title.
+  /// [body] — optional pre-localized notification body.
   Future<void> scheduleWarrantyReminder({
     required String receiptId,
     required String storeName,
     required DateTime expiryDate,
     required int daysBefore,
+    String? title,
+    String? body,
   });
 
   /// Cancel all scheduled reminders for the given [receiptId].
